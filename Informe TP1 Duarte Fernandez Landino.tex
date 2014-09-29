@@ -1,0 +1,127 @@
+\documentclass[a4paper,10pt]{article}
+
+\usepackage{graphicx}
+\usepackage[ansinew]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{listings} 
+\usepackage{float}
+\usepackage[justification=centering]{caption}
+
+
+\title{		\textbf{Trabajo práctico \#1: conjunto de instrucciones MIPS}}
+
+\author{	Santiago Fernandez, \textit{Padrón Nro. 94.489}                     \\
+            \texttt{ fernandezsantid@gmail.com }                                              \\[2.5ex]
+            Francisco Landino, \textit{Padrón Nro. 94.475}                     \\
+            \texttt{ landinofrancisco@gmail.com }                                              \\[2.5ex]
+            Matias Duarte, \textit{Padrón Nro. 92.186}                     \\
+            \texttt{ duarte.mati@gmail.com }                                              \\[2.5ex]
+            \normalsize{2do. Cuatrimestre de 2014}                                      \\
+            \normalsize{66.20 Organización de Computadoras  $-$ Práctica Jueves}  \\
+            \normalsize{Facultad de Ingeniería, Universidad de Buenos Aires}            \\
+       }
+\date{}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{empty}   % quita el número en la primer página
+
+
+\begin{abstract}
+Este trabajo práctico trata de una versión en lenguaje C de un programa que lee un archivo de texto que contiene tags posiblemente anidados, y 
+verifica que la estructura sea correcta. Además, el objetivo fue familiarizarse con el conjunto de instrucciones MIPS32 y el concepto de ABI.
+\end{abstract}
+\pagebreak 
+
+\tableofcontents
+\pagebreak
+
+\section{Introducción}
+
+\pagebreak 
+
+\section{Desarrollo}
+
+
+\subsection{Recursos y Portabilidad}
+
+Uno de los objetivos del trabajo práctico es poder probar la portabilidad del
+programa en diferentes entornos. En el enunciado se pedía que el programa se pudiera ejecutar en NetBSD[4]/pmax (usando el simulador GXemul[5]) y en la versión
+de Linux (Knoppix, RedHat, Debian, Ubuntu) usada para correr el simulador,
+Linux/i386. En particular, se lo probó en Ubuntu 14.04. En GXemul se corrió una máquina de arquitectura MIPS cuyo sistema operativo era una versión reciente de NetBSD/pmax. La transferencia de archivos entre la máquina host y la guest se hizo mediante \textit{SSH}. Se procedió de la siguiente manera:
+
+Para trabajar con el GXemul se procedió primero creando una nueva interfaz de red (debe crearse cada vez que se inicia el \textit{host} y con permisos de administrador):
+\\
+
+\emph{hostOS\$ sudo ifconfig lo:0 172.20.0.1}
+\\
+
+Luego se ejecutó el GXemul en modo X:
+\\
+
+\emph{hostOS\$ ./xgxemul -e 3max -d netbsd-pmax.img -x}
+\\
+
+Una vez ya ingresado con el usuario y la contraseña en la máquina simulada,
+se creó un túnel reverso para saltear las limitaciones propias del GXemul:
+\\
+
+\emph{guestOS\$ ssh -R 2222:127.0.0.1:22 usuario@172.20.0.1}
+\\
+
+A partir de ese momento y dejando lo anterior en segundo plano, ya se puedo
+trabajar mediante SSH de manera más cómoda:
+\\
+
+\emph{hostOS\$ ssh -p 2222 root@127.0.0.1}
+\\
+
+\subsection{Implementación}
+
+
+
+\subsection{Compilación}
+
+Para compilar el trabajo práctico, se tiene que ejecutar la siguiente línea en la terminal de Linux.\\
+\\
+\emph{gcc -Wall -pedantic -std=c99 main.c auxiliares.c -I / -o tp0}\\
+
+Para simplificar este proceso, y no tener que escribir el comando entero, se creó un archivo \emph{compile.sh}, mediante el cual, con solo escribir \emph{./compile.sh}, se compila el trabajo práctico.
+
+\subsection{Corrida de Pruebas}
+\\
+
+\begin{lstlisting}
+
+\end{lstlisting}
+
+
+\subsection{Código}
+\subsubsection{Código en C}
+
+\begin{lstlisting}[language=C, columns=flexible, breaklines=true, frame=single, title=Listing : auxiliares.c]
+
+\end{lstlisting}
+
+\begin{lstlisting}[language=C, columns=flexible, breaklines=true, frame=single, title=Listing : main.c]
+
+\end{lstlisting}
+
+\begin{lstlisting}[language=C, columns=flexible, breaklines=true, frame=single, title=Listing : auxiliares.h]
+
+\end{lstlisting}
+
+\newpage
+\section{Conclusiones}
+
+\\
+
+\newpage
+\section{Referencias}
+\noindent[1] GXemul, http://gavare.se/gxemul/.\\ \relax
+[2] The NetBSD project, http://www.netbsd.org/.\\ \relax
+[3] System V application binary interface, MIPS RISC processor supplement(third edition). Santa Cruz Operations, Inc.\\ \relax
+[4] func call conv.pdf, en el area de Material de los archivos del grupo de Yahoo.\\ \relax
+
+\end{document}
