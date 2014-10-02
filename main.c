@@ -15,6 +15,14 @@ void printManual(){
 	printf(" validate -i myfile.tagged\n");
 }
 
+assd
+a
+s
+w
+
+
+
+s
 //Funcion para comprobar que los archivos se abrieron bien.
 void checkFile(FILE* file){
     if (file == NULL){
