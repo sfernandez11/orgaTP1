@@ -118,6 +118,9 @@ int main(int argc, char* argv[]){
 	//Arranca la ejecucion del programa.
 	if (ejecutar){
 		printf("Arranca\n");
+		//char* text = "<tag1> hola </tag1>.";
+		char **errmsg;
+		validate(text, errmsg);
 
 		//Se llama a la funcion validate.
 		// *text es un puntero al texto contenido en el archivo.
