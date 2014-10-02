@@ -1,5 +1,21 @@
 #include "validate.h"
 
+void cargarArchivoAMemoria(FILE* archivoEntrada, char** text) 
+{ 
+	int size;
+	fseek(archivoEntrada, 0, SEEK_END);
+	size = ftell(archivoEntrada);
+	rewind(archivoEntrada);
+	*text = (char *)malloc(size+1);
+	if (size != fread(*text, sizeof(char), size, archivoEntrada)) 
+	{ 
+		free(*text);
+		fprintf(stderr, "Error, no se pudo cargar el archivo a memoria, el programa se cerrara.\n");
+		exit(1);
+	} 
+	(*text)[size] = 0; //Para saber donde cortar la iteracion del vector.
+}
+
 //Funcion que imprime el manual del TP1
 void printManual(){
 	printf("Usage:\n validate -h\n");
@@ -45,6 +61,7 @@ int main(int argc, char* argv[]){
 	const char* nombreArchivo;
 	int ejecutar = 0;
 	int flag;
+	char* text;
 
 	//Procesamiento de los parametros de entrada.
 	do {
@@ -59,6 +76,8 @@ int main(int argc, char* argv[]){
 	    	archivoEntrada = fopen(nombreArchivo, "r");
 			printf("\nArchivo actual: %s\n",nombreArchivo);
 			checkFile(archivoEntrada);
+			cargarArchivoAMemoria(archivoEntrada, &text);
+			fclose(archivoEntrada);
 		}
 		ejecutar = 1;
 		break;
@@ -90,9 +109,12 @@ int main(int argc, char* argv[]){
 		archivoEntrada = fopen(nombreArchivo, "r");
 		printf("\nArchivo actual: %s\n",nombreArchivo);
 		checkFile(archivoEntrada);
+		cargarArchivoAMemoria(archivoEntrada, &text);
+		fclose(archivoEntrada);
 		ejecutar = 1;
 	}
 
+	int prueba = 0;
 	//Arranca la ejecucion del programa.
 	if (ejecutar){
 		printf("Arranca\n");
@@ -100,9 +122,6 @@ int main(int argc, char* argv[]){
 		char **errmsg;
 		validate(text, errmsg);
 
-		//Se carga el texto a memoria.
-
-		
 		//Se llama a la funcion validate.
 		// *text es un puntero al texto contenido en el archivo.
 		// **errmsg es un puntero a un array de caracteres, a llenar por la funcion validate en caso de error.
@@ -113,6 +132,12 @@ int main(int argc, char* argv[]){
 		//	fprintf(stderr, "%s en la linea %i\n", errmsg[flag], lineaError);
 		//	exit(1);
 		//}
+
+		do { 
+			putchar(text[prueba]);
+			prueba++;
+		} 
+		while(text[prueba] != '\0');
 
 	} else {
 		fprintf(stderr, "Error, accion invalida, el programa se cerrara.\n");
