@@ -62,6 +62,7 @@ int main(int argc, char* argv[]){
 	int ejecutar = 0;
 	int flag;
 	char* text;
+	char** errmsg;
 
 	//Procesamiento de los parametros de entrada.
 	do {
@@ -114,30 +115,20 @@ int main(int argc, char* argv[]){
 		ejecutar = 1;
 	}
 
-	int prueba = 0;
 	//Arranca la ejecucion del programa.
 	if (ejecutar){
-		printf("Arranca\n");
-		//char* text = "<tag1> hola </tag1>.";
-		char **errmsg;
-		validate(text, errmsg);
 
 		//Se llama a la funcion validate.
 		// *text es un puntero al texto contenido en el archivo.
 		// **errmsg es un puntero a un array de caracteres, a llenar por la funcion validate en caso de error.
 		//Se utiliza la variable flag para ver si hubo error o no en la validacion.
 		//La funcion debe retornar 0 en caso de que la validacion sea correcta, o 1 en caso de que no.
-		//flag = validate(char *text, char **errmsg);
-		//if (flag != 0){
-		//	fprintf(stderr, "%s en la linea %i\n", errmsg[flag], lineaError);
-		//	exit(1);
-		//}
+		flag = validate(text, errmsg);
+		if (flag){
+			fprintf(stderr, "%s\n", errmsg[0]);
+			exit(1);
+		}
 
-		do { 
-			putchar(text[prueba]);
-			prueba++;
-		} 
-		while(text[prueba] != '\0');
 
 	} else {
 		fprintf(stderr, "Error, accion invalida, el programa se cerrara.\n");
