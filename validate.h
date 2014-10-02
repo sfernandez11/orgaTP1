@@ -7,6 +7,8 @@
 #include <ctype.h>
 #include <getopt.h>
 
+#include "stack.h"
+
 extern const char** errmsg;
 
 int validate(char *text, char **errmsg);

@@ -120,7 +120,11 @@ int main(int argc, char* argv[]){
 		printf("Arranca\n");
 		//char* text = "<tag1> hola </tag1>.";
 		char **errmsg;
-		validate(text, errmsg);
+		flag = validate(text, errmsg);
+		if(flag)
+		{
+			printf(*errmsg);
+		}
 
 		//Se llama a la funcion validate.
 		// *text es un puntero al texto contenido en el archivo.
@@ -133,11 +137,22 @@ int main(int argc, char* argv[]){
 		//	exit(1);
 		//}
 
-		do { 
-			putchar(text[prueba]);
-			prueba++;
-		} 
-		while(text[prueba] != '\0');
+//		do {
+//			putchar(text[prueba]);
+//			prueba++;
+//		}
+//		while(text[prueba] != '\0');
+
+		   char source[] = "C program";
+		   char destination[50];
+
+		   strcpy(destination, source);
+		   source[0] = "otro";
+
+		   printf("\nSource string: %s\n", source);
+		   printf("Destination string: %s\n", destination);
+
+		   return 0;
 
 	} else {
 		fprintf(stderr, "Error, accion invalida, el programa se cerrara.\n");
