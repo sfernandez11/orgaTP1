@@ -118,7 +118,7 @@ int main(int argc, char* argv[]){
 	//Arranca la ejecucion del programa.
 	if (ejecutar){
 		printf("Arranca\n");
-		char* text = "<tag1> hola </tag1>.";
+		//char* text = "<tag1> hola </tag1>.";
 		char **errmsg;
 		validate(text, errmsg);
 
