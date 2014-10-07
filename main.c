@@ -1,19 +1,24 @@
 #include "validate.h"
 
-void cargarArchivoAMemoria(FILE* archivoEntrada, char** text) 
+void cargarArchivoAMemoria(FILE* archivoEntrada, char* text) 
 { 
-	int size;
-	fseek(archivoEntrada, 0, SEEK_END);
-	size = ftell(archivoEntrada);
-	rewind(archivoEntrada);
-	*text = (char *)malloc(size+1);
-	if (size != fread(*text, sizeof(char), size, archivoEntrada)) 
-	{ 
-		free(*text);
-		fprintf(stderr, "Error, no se pudo cargar el archivo a memoria, el programa se cerrara.\n");
-		exit(1);
-	} 
-	(*text)[size] = 0; //Para saber donde cortar la iteracion del vector.
+	int actual = 0;
+	while(!feof(archivoEntrada)){
+		(text)[actual] = fgetc(archivoEntrada);
+		actual++;					
+	}	
+	(text)[actual-1] = '\0';
+
+	//Debug
+	printf("----DEBUG----\n");
+	int prueba = 0;
+	do {
+		putchar(text[prueba]);
+		prueba++;
+	}
+	while(text[prueba] != '\0');
+	printf("\n");
+	//Debug
 }
 
 //Funcion que imprime el manual del TP1
@@ -61,8 +66,9 @@ int main(int argc, char* argv[]){
 	const char* nombreArchivo;
 	int ejecutar = 0;
 	int flag;
-	char* text;
 	char** errmsg;
+	int tamanio = 2048;
+	char text[tamanio];
 
 	//Procesamiento de los parametros de entrada.
 	do {
@@ -77,8 +83,11 @@ int main(int argc, char* argv[]){
 	    	archivoEntrada = fopen(nombreArchivo, "r");
 			printf("\nArchivo actual: %s\n",nombreArchivo);
 			checkFile(archivoEntrada);
-			cargarArchivoAMemoria(archivoEntrada, &text);
+			cargarArchivoAMemoria(archivoEntrada, text);
 			fclose(archivoEntrada);
+		}else {
+			printf("\nProcesando por STDIN\n");
+			cargarArchivoAMemoria(archivoEntrada, text);
 		}
 		ejecutar = 1;
 		break;
@@ -110,35 +119,19 @@ int main(int argc, char* argv[]){
 		archivoEntrada = fopen(nombreArchivo, "r");
 		printf("\nArchivo actual: %s\n",nombreArchivo);
 		checkFile(archivoEntrada);
-		cargarArchivoAMemoria(archivoEntrada, &text);
+		cargarArchivoAMemoria(archivoEntrada, text);
 		fclose(archivoEntrada);
 		ejecutar = 1;
 	}
 
 	//Arranca la ejecucion del programa.
 	if (ejecutar){
-		printf("Arranca\n");
-		//char* text = "<tag1> hola </tag1>.";
-		char **errmsg;
-		flag = validate(text, errmsg);
-
+		printf("----ARRANCA----\n");
 		//Se llama a la funcion validate.
 		// *text es un puntero al texto contenido en el archivo.
 		// **errmsg es un puntero a un array de caracteres, a llenar por la funcion validate en caso de error.
 		//Se utiliza la variable flag para ver si hubo error o no en la validacion.
 		//La funcion debe retornar 0 en caso de que la validacion sea correcta, o 1 en caso de que no.
-		//flag = validate(char *text, char **errmsg);
-		//if (flag != 0){
-		//	fprintf(stderr, "%s en la linea %i\n", errmsg[flag], lineaError);
-		//	exit(1);
-		//}
-
-//		do {
-//			putchar(text[prueba]);
-//			prueba++;
-//		}
-//		while(text[prueba] != '\0');
-
 		flag = validate(text, errmsg);
 		if (flag){
 			fprintf(stderr, "%s\n", errmsg[0]);
