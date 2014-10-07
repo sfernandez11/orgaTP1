@@ -134,9 +134,11 @@ int main(int argc, char* argv[]){
 		//La funcion debe retornar 0 en caso de que la validacion sea correcta, o 1 en caso de que no.
 		flag = validate(text,&errmsg);
 		if (flag<0){
-			fprintf(stderr, "%s\n", errmsg);
+			fprintf(stderr, "1\n%s\n", errmsg);
 
 			exit(1);
+		} else {
+			fprintf(stdout, "0\n");
 		}
 
 	} else {
