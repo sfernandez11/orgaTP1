@@ -1,4 +1,7 @@
 #include "validate.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 int analizarTag(char* text, char* tagEncontrado, int pos, int *contadorLineas)
 {
@@ -10,22 +13,18 @@ int analizarTag(char* text, char* tagEncontrado, int pos, int *contadorLineas)
 		}
 		if(text[pos] == '<')
 		{
-			printf("%c", text[pos]);
 			pos++;
 			// Si entra en cerrar un tag
 			if(text[pos] == '/')
 			{
-				printf("%c", text[pos]);
 				pos++;
 				int j = 0;
 				while(text[pos] != '>')
 				{
 					if(tagEncontrado[j] != text[pos])
 					{
-						printf("El tag cerrado no es igual al abierto. Tag: %i. Texto: %i.\n", j, pos);
 						return -2;
 					}
-					printf("%c", text[pos]);
 					j++;	pos++;
 				}
 				return pos;
@@ -41,24 +40,18 @@ int analizarTag(char* text, char* tagEncontrado, int pos, int *contadorLineas)
 				while(text[pos] != '>')
 				{
 					tagALevantar[k] = text[pos];
-					printf("%c", text[pos]);
 					k++; pos++;
 				}
-				printf("%c", text[pos]);
 				pos++;
 				int posSiguiente;
 				posSiguiente = analizarTag(text, tagALevantar, pos, contadorLineas);
 				free(tagALevantar);
-				char digitoEnChar = (char)(((int)'0')+(*contadorLineas));
 				switch(posSiguiente)
 				{
 				case -1:
-					printf("El tag abierto, no fue cerrado, en la linea: %c.\n", digitoEnChar);
 					return -1;
 					break;
 				case -2:
-
-					printf("Tag mal anidado, el ultimo tag abierto, no corresponde al tag cerrado, en la linea: %c.\n", digitoEnChar);
 					return -2;
 					break;
 
@@ -69,7 +62,6 @@ int analizarTag(char* text, char* tagEncontrado, int pos, int *contadorLineas)
 				}
 			}
 		}
-		printf("%c", text[pos]);
 		pos++;
 	}
 	return -1;
@@ -79,7 +71,7 @@ int validate(char *text, char **errmsg){
 
 	char* buffer;
 	int i = 0;
-	int contadorLineas = 1;
+	int contadorLineas = 0;
 
 	while(text[i] != '\0')
 	{
@@ -90,42 +82,33 @@ int validate(char *text, char **errmsg){
 
 		if(text[i] == '<')
 		{
-			//char buffer[256];
-			printf("%c", text[i]);
 			i++;
 			int j = 0;
 			char* tagALevantar;
 			while(text[i] != '>')
 			{
 				tagALevantar[j] = text[i];
-				printf("%c", text[i]);
 				j++; i++;
 			}
 			i = analizarTag(text, tagALevantar, i, &contadorLineas);
-			char digitoEnChar = (char)(((int)'0')+contadorLineas);
 			switch(i)
 			{
 			case -1:
-				//errmsg = "El tag abierto, no fue cerrado, en la linea: %c.\n", digitoEnChar;
-				sprintf(buffer, " Antes del -1El tag abierto, no fue cerrado, en la linea: %c.\n", digitoEnChar);
-				//printf(buffer);
-				//strcpy(*errmsg,buffer);
-				//errmsg[0][0] = buffer;
+				sprintf(buffer, "El tag abierto, no fue cerrado, en la linea: %d.\n", contadorLineas);
+				*errmsg = buffer;
 				return -1;
 				break;
 			case -2:
-
-				printf("Tag mal anidado, el ultimo tag abierto, no corresponde al tag cerrado, en la linea: %c.\n", digitoEnChar);
+				sprintf(buffer, "Tag mal anidado, el ultimo tag cerrado, no corresponde con el ultimo tag abierto, en la linea: %d.\n", contadorLineas);
+				*errmsg = buffer;
 				return -2;
 				break;
 
 			default:
-				printf("||Analizo todo bien joyisimo. Linea: %i|| \n", contadorLineas);
 				break;
 
 			}
 		}
-		//printf("%c", text[i]);
 		i++;
 	}
 	return 0;
