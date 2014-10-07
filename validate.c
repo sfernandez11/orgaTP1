@@ -49,7 +49,7 @@ int validate(char *text, char **errmsg){
 			}
 			j = 0; 		// Con j recorro el tag
 
-		} else if( (text[i] == '>') && ( (entroEnAbrirTag) || (entroEnCerrarTag)) )
+		} else if( (text[i+1] == '>') && ( (entroEnAbrirTag) || (entroEnCerrarTag)) )
 		{
 			if(entroEnAbrirTag)
 			{
