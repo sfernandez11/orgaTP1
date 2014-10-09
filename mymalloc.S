@@ -154,7 +154,7 @@ mymalloc_die:
  * void
  * myfree(void * p)
  *
- * Free previously mymalloc'd memory. No-ops on a null pointer
+ * Free previously mymalloc memory. No-ops on a null pointer
  */
 
 #define FREE_SS				40

@@ -135,6 +135,7 @@ comienzaTag:
 	lb		t0,0(t0)			#Cargo el texto en la pos(cargo un char)
 	li 		t6, BARRA			#Cargo la barra en t6
 	beq		t0, t6, comienzaCerrarTag	#Si t0 es igual a la barra empieza un cerrar tag
+	# ACA VA EMPEZAR DE SANTI
 
 comienzaCerrarTag:	
 	#Tengo que saltear la barra, muevo el texto una pos
@@ -151,7 +152,27 @@ whileDistintoDeCerrarTag:
 	addu 	t2,t2,t4			#En t2 guardo la direc de tagEncontrado[j]
 	lw		t2,0(t2)			#Cargo tagEncontrado[j]
 	bne 	t0,t2,errorAnidado	#Si el tagEncontrado[j] es distinto al text[pos] es un error
-	#ACA TENGO QUE SEGUIR
+	#ACA TENGO QUE SEGUIR(PACHO)
+
+empezar:
+	move 	t7, t1
+	lw		t0,ATAG_ARG0(sp)			#Cargo la direc el texto
+contadorTag:
+	addu	t8,t0,t7					#Muevo la direc del texto a la pos
+	lb		t9,0(t8)					#Cargo el texto en la pos
+	bne		t9,MAYOR, aumentarConTag	#Distino de fin de texto
+	subu	t8, t8, t7					#contadorTag = contadorTag - pos;
+	lw		a0,	t8						#cargo el argunmento de la funcion
+	jal		mymalloc					#llamo a la funcion malloc
+	sw		v0, t8						#guardo en t8 la posicino de memoria que reserve
+
+cargarTagALevantar:
+	
+
+
+aumentarConTag:
+	addiu	t7, t7, 1 					#contadorTag++
+	b 		contadorTag	
 
 devolverPosActual;
 	move 	v0, t1				#Muevo el t1 que tiene la pos a v0
