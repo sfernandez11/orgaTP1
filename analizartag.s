@@ -75,8 +75,8 @@
 #define ATAG_ARG3		12
 
 #define FIN_TEXTO 		0
-#define BARRA 			47
 #define SALTO_DE_LINEA	10
+#define BARRA 			47
 #define MENOR			60
 #define MAYOR 			62
 
@@ -96,25 +96,66 @@ analizarTag:
 	sw 		a2,ATAG_ARG2(sp)
 	sw 		a3,ATAG_ARG3(sp)
 
-	#Texto = t0; Pos= t1; tagLevantado= t2;
-	#contadorLinea= t3; j(tagEncontrado)= t4; k(tagALevantar)= t5
+	#Texto = t0; 		Pos= t1; 				tagLevantado= t2
+	#contadorLinea= t3; j(tagEncontrado)= t4; 	k(tagALevantar)= t5
+	#auxiliar= t6;		contadorTag= t7
 
 whileDistintoDeEnd:
-	lw	t0,ATAG_ARG0(sp)	#Cargo la direc el texto
-	lw	t1,ATAG_ARG2(sp)	#Cargo la direc de la pos
-	addu	t0,t1,t0		#Muevo la direc del texto a la pos
-	lb	t0,0(t0)			#Cargo el texto en la pos
-	bne	t0,zero,saltoDeLinea 	#Distino de fin de texto
-	b	errorNoCerrado		#LLegue al fin del texto y no cerre el tag
+	lw		t0,ATAG_ARG0(sp)	#Cargo la direc el texto
+	lw		t1,ATAG_ARG2(sp)	#Cargo la direc de la pos
+	addu	t0,t1,t0			#Muevo la direc del texto a la pos
+	lb		t0,0(t0)			#Cargo el texto en la pos(cargo un char)
+	bne		t0,FIN_TEXTO,verSiEsSaltoDeLinea 	#Distino de fin de texto
+	b		errorNoCerrado		#LLegue al fin del texto y no cerre el tag
 
-saltoDeLinea:
-	li	t6,10				# Carga 
-	bne	$v1,$v0,$L21
+verSiEsSaltoDeLinea:
+	li		t6,SALTO_DE_LINEA	#Carga el caracter de salto de linea '\n'
+	bne		t0,t6,verSiComienzaTag	#Si no es salto de linea, salta  a analizar si empieza un tag
 
-		
+	#Si es igual a salto de linea, tengo que sumar uno al contador de linea#
+
+	lw		t3,ATAG_ARG3(sp)	#Guardo la direccion de contadorLineas
+	lw		t6,ATAG_ARG3(sp)	#Guardo la direccion de contadorLineas
+	lw		t3,0(t3)			#Cargo contadorLineas(int)
+	addu	t3,t3,1 		#Le sumo uno a contadorLineas
+	sw		t3,ATAG_ARG3(sp)	#Guardo en la direc de contadorLineas, contadorLineas + 1
+
+verSiComienzaTag:
+	li		t6,MENOR			#Cargo el '<'
+	beq		t0,t6,comienzaTag	#Si es igual a '<' muevo el texto una pos y sigo comparando 
+	addu	t1,t1,1 			#Si es distinto, le sumo uno a la pos
+	sw 		t1, ATAG_ARG2(sp)	#Guardo pos++
+	b 		whileDistintoDeEnd	#Vuelvo al principio
+
+comienzaTag:
+	addu	t1,t1,1 			#Le sumo uno a pos
+	sw 		t1, ATAG_ARG2(sp)	#Guardo pos++
+	lw		t0,ATAG_ARG0(sp)	#Cargo la direc del texto
+	addu	t0,t1,t0			#Muevo la direc del texto a la pos
+	lb		t0,0(t0)			#Cargo el texto en la pos(cargo un char)
+	li 		t6, BARRA			#Cargo la barra en t6
+	beq		t0, t6, comienzaCerrarTag	#Si t0 es igual a la barra empieza un cerrar tag
+
+comienzaCerrarTag:	
+	#Tengo que saltear la barra, muevo el texto una pos
+	addu	t1,t1,1 			#Le sumo uno a pos
+	sw 		t1, ATAG_ARG2(sp)	#Guardo pos++
+	lw		t0,ATAG_ARG0(sp)	#Cargo la direc del texto
+	addu	t0,t1,t0			#Muevo la direc del texto a la pos
+	lb		t0,0(t0)			#Cargo el texto en la pos(cargo un char)
+	lw 		t4,zero				# j = 0
+
+whileDistintoDeCerrarTag:
+	li 		t6, MAYOR			#En t6 cargo el '>'
+	lw		t2,ATAG_ARG1		#En t2 cargo la direcc de tagEncontrado
+	addu 	t2,t2,t4			#En t2 guardo la direc de tagEncontrado[j]
+	lw		t2,0(t2)			#Cargo tagEncontrado[j]
+	bne 	t0,t2,errorAnidado	#Si el tagEncontrado[j] es distinto al text[pos] es un error
+	#ACA TENGO QUE SEGUIR
+
 devolverPosActual;
-	move 	v0, TEMPORALPOS
-	b salirATAG
+	move 	v0, t1				#Muevo el t1 que tiene la pos a v0
+	b salirATAG					#Recupero los registros
 
 errorNoCerrado;
 	li	v0,-1	# return -1;
