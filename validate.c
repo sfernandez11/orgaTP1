@@ -96,12 +96,12 @@ int validate(char *text, char **errmsg){
 			case -1:
 				sprintf(buffer, "El tag abierto, no fue cerrado, en la linea: %d.\n", contadorLineas);
 				*errmsg = buffer;
-				return -1;
+				return 1;
 				break;
 			case -2:
 				sprintf(buffer, "Tag mal anidado, el ultimo tag cerrado, no corresponde con el ultimo tag abierto, en la linea: %d.\n", contadorLineas);
 				*errmsg = buffer;
-				return -2;
+				return 1;
 				break;
 
 			default:

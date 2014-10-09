@@ -133,9 +133,8 @@ int main(int argc, char* argv[]){
 		//Se utiliza la variable flag para ver si hubo error o no en la validacion.
 		//La funcion debe retornar 0 en caso de que la validacion sea correcta, o 1 en caso de que no.
 		flag = validate(text,&errmsg);
-		if (flag<0){
+		if (flag>0){
 			fprintf(stderr, "1\n%s\n", errmsg);
-
 			exit(1);
 		} else {
 			fprintf(stdout, "0\n");
