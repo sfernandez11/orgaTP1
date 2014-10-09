@@ -62,44 +62,52 @@
 #}
 ##################################################################
 
+#include <mips/regdef.h>
+#include <sys/syscall.h>
+
+#define ATAG_SS			32
+#define ATAG_RA  		24
+#define ATAG_FP			20
+#define ATAG_GP			16
+#define ATAG_ARG0		0
+#define ATAG_ARG1  		4
+#define ATAG_ARG2		8
+#define ATAG_ARG3		12
+
 	.text
+	.align	2
 	.globl	analizarTag
+	.ent	analizarTag
 
 analizarTag:
-		subu	$sp,$sp,XX
-		sw		$ra,XX($sp)
-		sw		$fp,XX($sp)
-		sw		$gp,XX($sp)
-		move	$fp,$sp
-		sw		$a0,XX($fp)
-		sw		$a1,XX($fp)
-		sw 		$a2,XX($fp)
-		sw 		$a3,XX($fp)
+		#Creo el stack frame
+	subu	sp,	sp,	ATAG_SS
+	sw		ra,	ATAG_RA(sp)	
+	sw		$fp,ATAG_FP(sp)
+	sw		gp, ATAG_GP(sp)
+	sw		a0,ATAG_ARG0($fp)
+	sw		a1,ATAG_ARG1($fp)
+	sw 		a2,ATAG_ARG2($fp)
+	sw 		a3,ATAG_ARG3($fp)
 
 whileDistintoDeEnd:
 		
 
-#switch:
-#		li t0, -1
-#		beq t0
 
+errorNoCerrado;
+	li	v0,-1	# return -1;
+	b salirATAG
 
-returnMenosUno;
-		move	$v0,-1	# return -1;
-		b return
+errorAnidado:
+	li 	v0,-2	# return -2;
+	b salirATAG
 
-returnMenosDos:
-		move 	$v0,-2
-		b return
+salirATAG:
+	#Destruye stack frame
+	lw		ra, ATAG_RA(sp)
+	lw		$fp,ATAG_FP(sp)
+	lw		gp, ATAG_GP(sp)
+	addu	sp,sp,ATAG_SS
+	j		ra
 
-return:
-		lw		$ao,XX(fp)
-		lw		$a1,XX(fp)
-		lw		$a2,XX(fp)
-		lw		$a3,XX(fp)
-		move	$sp,$fp		# destruccion del stack frame
-		lw		$ra,XX($sp)
-		lw		$fp,XX($sp)
-		lw		$gp,XX($sp)
-		addu	$sp,$sp,XX
-		j		$ra
+.end analizarTag
