@@ -74,6 +74,12 @@
 #define ATAG_ARG2		8
 #define ATAG_ARG3		12
 
+#define FIN_TEXTO 		0
+#define BARRA 			47
+#define SALTO_DE_LINEA	10
+#define MENOR			60
+#define MAYOR 			62
+
 	.text
 	.align	2
 	.globl	analizarTag
@@ -85,14 +91,30 @@ analizarTag:
 	sw		ra,	ATAG_RA(sp)	
 	sw		$fp,ATAG_FP(sp)
 	sw		gp, ATAG_GP(sp)
-	sw		a0,ATAG_ARG0($fp)
-	sw		a1,ATAG_ARG1($fp)
-	sw 		a2,ATAG_ARG2($fp)
-	sw 		a3,ATAG_ARG3($fp)
+	sw		a0,ATAG_ARG0(sp)
+	sw		a1,ATAG_ARG1(sp)
+	sw 		a2,ATAG_ARG2(sp)
+	sw 		a3,ATAG_ARG3(sp)
+
+	#Texto = t0; Pos= t1; tagLevantado= t2;
+	#contadorLinea= t3; j(tagEncontrado)= t4; k(tagALevantar)= t5
 
 whileDistintoDeEnd:
-		
+	lw	t0,ATAG_ARG0(sp)	#Cargo la direc el texto
+	lw	t1,ATAG_ARG2(sp)	#Cargo la direc de la pos
+	addu	t0,t1,t0		#Muevo la direc del texto a la pos
+	lb	t0,0(t0)			#Cargo el texto en la pos
+	bne	t0,zero,saltoDeLinea 	#Distino de fin de texto
+	b	errorNoCerrado		#LLegue al fin del texto y no cerre el tag
 
+saltoDeLinea:
+	li	t6,10				# Carga 
+	bne	$v1,$v0,$L21
+
+		
+devolverPosActual;
+	move 	v0, TEMPORALPOS
+	b salirATAG
 
 errorNoCerrado;
 	li	v0,-1	# return -1;
