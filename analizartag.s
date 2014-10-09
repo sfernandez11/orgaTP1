@@ -97,7 +97,8 @@ analizarTag:
 	sw 		a3,ATAG_ARG3(sp)
 
 	#Texto = t0; Pos= t1; tagLevantado= t2;
-	#contadorLinea= t3; j(tagEncontrado)= t4; k(tagALevantar)= t5
+	#contadorLinea= t3; j(tagEncontrado)= t4; k(tagALevantar)= t5;
+	#auxiliar = t6;  contadorTag = t7
 
 whileDistintoDeEnd:
 	lw	t0,ATAG_ARG0(sp)	#Cargo la direc el texto
@@ -110,6 +111,29 @@ whileDistintoDeEnd:
 saltoDeLinea:
 	li	t6,10				# Carga 
 	bne	$v1,$v0,$L21
+
+
+empezar:
+	move 	t7, t1
+	lw		t0,ATAG_ARG0(sp)			#Cargo la direc el texto
+contadorTag:
+	addu	t8,t0,t7					#Muevo la direc del texto a la pos
+	lb		t9,0(t8)					#Cargo el texto en la pos
+	bne		t9,MAYOR, aumentarConTag	#Distino de fin de texto
+	subu	t8, t8, t7					#contadorTag = contadorTag - pos;
+	lw		a0,	t8						#cargo el argunmento de la funcion
+	jal		mymalloc					#llamo a la funcion malloc
+	sw		v0, t8						#guardo en t8 la posicino de memoria que reserve
+
+cargarTagALevantar:
+	
+
+
+
+aumentarConTag:
+	addiu	t7, t7, 1 					#contadorTag++
+	b 		contadorTag	
+
 
 		
 devolverPosActual;
