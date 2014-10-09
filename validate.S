@@ -57,6 +57,7 @@
 #define VALIDATE_I         	16
 #define VALIDATE_CL			20
 #define VALIDATE_J			24
+#define VALIDATE_TAGL		28
 
 #define FIN_TEXTO 		0
 #define BARRA 			47
@@ -70,7 +71,8 @@
 # t1 = *text
 # t2 = </0\n>
 # t3 = contadorLineas
-
+# t4 = tagALevantar
+# t5 = j
 
 	.data
 
@@ -118,6 +120,30 @@ ifMenor:
 	addu	t0,t0,1 # i++
 	sw	t0,VALIDATE_ARG0(sp)
 	sw	zero,VALIDATE_J(sp) # j = 0
+
+whileNotFinTag:
+	li	t2, MAYOR	# t2 = >		
+	bne	t1,t2, tagALevantar # text[i] != '>'
+	b	switchValidate
+
+tagALevantar:
+	lw	t4,VALIDATE_TAGL(sp) #Almaceno memoria para tag a levantar en el stack
+	lw	t5,VALIDATE_J(sp) #Cargo en t5 j, j = 0
+	addu	a0,t4,t5
+	addu	t0,t1,t0
+	lbu	t0,0(t0)
+	sb	t0,0(a0)
+	lw	t5,VALIDATE_J(sp)
+	addu	t5,t5,1 #j++
+	sw	t5,VALIDATE_J(sp)
+	lw	t0,VALIDATE_I(sp)
+	addu	t0,t0,1 #i++
+	sw	t0,VALIDATE_I(sp)
+	b	whileNotFinTag
+
+
+swtichValidate:
+		#SEGUIR ACA!!!!!!!!!!!!!!!!!!!!!!!!
 
 incrementarPos:
 	lw	t0,VALIDATE_ARG0(sp) # t0 = i
