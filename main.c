@@ -8,17 +8,6 @@ void cargarArchivoAMemoria(FILE* archivoEntrada, char* text)
 		actual++;					
 	}	
 	(text)[actual-1] = '\0';
-
-//	//Debug
-//	printf("----DEBUG----\n");
-//	int prueba = 0;
-//	do {
-//		putchar(text[prueba]);
-//		prueba++;
-//	}
-//	while(text[prueba] != '\0');
-//	printf("\n");
-//	//Debug
 }
 
 //Funcion que imprime el manual del TP1
