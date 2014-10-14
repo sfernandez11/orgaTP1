@@ -1,7 +1,4 @@
 #include "validate.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 int analizarTag(char* text, char* tagEncontrado, int pos, int *contadorLineas)
 {
