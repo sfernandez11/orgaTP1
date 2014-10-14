@@ -23,7 +23,7 @@ int analizarTag(char* text, char* tagEncontrado, int pos, int *contadorLineas)
 				{
 					j++;	pos++;
 				}
-				if(tagEncontrado[j] == '\0')
+				if((tagEncontrado[j] == '\0') && (text[pos] == '>') )
 				{
 					return pos;
 				} else {
@@ -43,6 +43,7 @@ int analizarTag(char* text, char* tagEncontrado, int pos, int *contadorLineas)
 					tagALevantar[k] = text[pos];
 					k++; pos++;
 				}
+				tagALevantar[k] = '\0';
 				pos++;
 				int posSiguiente;
 				posSiguiente = analizarTag(text, tagALevantar, pos, contadorLineas);
@@ -91,10 +92,7 @@ int validate(char *text, char **errmsg){
 				tagALevantar[j] = text[i];
 				j++; i++;
 			}
-			if(text[i] == '>')
-			{
-				tagALevantar[j] = '\0';
-			}
+			tagALevantar[j] = '\0';
 			i = analizarTag(text, tagALevantar, i, &contadorLineas);
 			switch(i)
 			{
