@@ -40,10 +40,25 @@ Este trabajo práctico trata de una versión en lenguaje C, de un programa que lee
 \section{Introducción}
 
 \par Como objetivo de este trabajo practico se trabajo tanto usando el conjunto de instrucciones de MIPS32 como en el lenguaje C, para programar un programa que recibe desde STDIN o desde un archivo de texto, un texto en el cual se encuentran tags, de la forma \emph{<Tag>... </Tag>}, posiblemente anidados. El programa se encarga de verificar que estén correctamente relacionados, lo que significa que el texto que abre un tag sea igual al texto que lo cierra y que estén correctamente anidados.
-\par También se trabajo usando el Argument Building Area presentado por la cátedra, para guardar los argumentos entre las llamadas de función a función.
+\par También se trabajo usando el ABI presentado por la cátedra, para guardar los argumentos entre las llamadas de función a función.
 
 \section{Desarrollo}
-\par Para desarrollar este trabajo primero se realizo un programa en lenguaje C, el cual 
+\par Para desarrollar este trabajo primero se realizo un programa en lenguaje C, el cual contempla las siguientes condiciones.\\
+
+\par Los \emph{tags} tienen que cumplir con la siguiente estructura:
+
+\begin{itemize}
+  \item Todos los \emph{tags} abiertos se cierran,
+  \item Todos los \emph{tags} que se cierran fueron abiertos.
+  \item Todos los \emph{tags} abiertos dentro de otro \emph{tag} se cierran antes que  ?este.
+  \item Si se detecta una violación de alguna de las reglas anteriores, se especifica el error (\emph{tag} sin cerrar, \emph{tag} sin abrir, \emph{tag} mal anidado) y el numero de línea (empezando por 0) por \textbf{stderr}. En caso de que la estructura del archivo sea valida, el programa debe devolver 0, caso contrario devolver 1, ademas de la salida por \textbf{stderr}.
+\end{itemize} 
+
+Un \emph{tag} esta compuesto por una secuencia de apertura, de la forma\\ "\textbf{<nombre-tag>}", un contenido que puede ser texto u otros \emph{tags}, y una secuencia de cierre de la forma "\textbf{</nombre-tag>}".
+
+\par Se considera que no pueden haber caracteres del tipo \emph{'<'} o \emph{'>'} sin que implique una apertura o cierre de un \emph{tag}.\\
+
+\par Luego a partir de esta implementacion en C, se desarrollaron las funciones \emph{validate} y \emph{analizarTag} en Assembly MIPS32. Para dicha implementación se uso el ABI que enseño la cátedra durante las clases. Al principio de cada función se crea un stack, donde se guardan los registros del Return Address, Frame Pointer y Global Pointer en las posiciones mas grandes del stack. Luego se guardan los atributos de la función y finalmente los argumentos.
 
 \subsection{Recursos y Portabilidad}
 
@@ -133,9 +148,32 @@ Texto 1:
 <Tag2>  texto2  </Tag2>
 <Tag3> texto3 </tag>
 
+Resultado:
+
 1
 Linea: 2. Tag mal anidado, el ultimo tag cerrado, no 
 corresponde con el ultimo tag abierto.
+
+Texto 2:
+
+<Tag1> texto </Tag1>
+<Tag2>  texto2  </Tag2>
+<Tag3> <otroTag> <italic> texto3 </italic> </otroTag> </Tag3> texto4 </Tag5>
+
+Resultado:
+
+1
+Linea: 2. El tag abierto, no fue cerrado.
+
+Texto 3:
+
+<Tag1> texto </Tag1>
+<Tag2>  texto2  </Tag2>
+<Tag3> <Bold> <UP> texto3 </UP> </Bold> </Tag3>
+
+Resultado:
+
+0
 
 \end{lstlisting}
 
@@ -143,22 +181,291 @@ corresponde con el ultimo tag abierto.
 \subsection{Código}
 \subsubsection{Código en C}
 
-\begin{lstlisting}[language=C, columns=flexible, breaklines=true, frame=single, title=Listing : auxiliares.c]
-
-\end{lstlisting}
-
 \begin{lstlisting}[language=C, columns=flexible, breaklines=true, frame=single, title=Listing : main.c]
 
+#include "validate.h"
+
+void cargarArchivoAMemoria(FILE* archivoEntrada, char* text) 
+{ 
+	int actual = 0;
+	while(!feof(archivoEntrada)){
+		(text)[actual] = fgetc(archivoEntrada);
+		actual++;					
+	}	
+	(text)[actual-1] = '\0';
+}
+
+//Funcion que imprime el manual del TP1
+void printManual(){
+	printf("Usage:\n validate -h\n");
+	printf(" validate -V\n");
+	printf(" validate [options] file\n");
+	printf("Options:\n");
+	printf(" -h, --help  	Prints usage information.\n");
+	printf(" -V, --version 	Prints version information.\n");
+	printf(" -i, --input 	Path to input file (-i - for stdin)\n");
+	printf("Examples:\n");
+	printf(" validate -i -\n");
+	printf(" validate myfile.tagged\n");
+	printf(" validate -i myfile.tagged\n");
+}
+
+//Funcion para comprobar que los archivos se abrieron bien.
+void checkFile(FILE* file){
+    if (file == NULL){
+    	//Si hay error se escribe por stderr.
+    	fprintf(stderr, "Error, nombre de archivo inexistente, el programa se cerrara.\n");
+        exit(1); // Se cierra el programa y se devuelve 1 por error.
+    }
+}
+
+//Funcion principal del TP1
+int main(int argc, char* argv[]){
+
+	int next_option;
+
+	const char* const short_options = "i:hV";
+
+	const struct option long_options[] = {
+
+		{ "input",     	1, NULL, 'i' },
+		{ "help",    	0, NULL, 'h' },
+		{ "version",    0, NULL, 'V' },
+		{ NULL,         0, NULL, 0   } /* Necesario al final del array.  */
+	};
+
+	//Aca por defecto se establecen algunos parametros.
+	//Luego depende las opciones elegidas se van cambiando.
+	FILE* archivoEntrada = stdin;
+	const char* nombreArchivo;
+	int ejecutar = 0;
+	int flag;
+	char* errmsg;
+	int tamanio = 2048;
+	char text[tamanio];
+
+	//Procesamiento de los parametros de entrada.
+	do {
+		next_option = getopt_long(argc, argv, short_options, long_options, NULL);
+
+		switch (next_option){
+
+		case 'i':   /* -i, --input */
+		/* Indica el archivo de entrada a utilizar (-i - for stdin) */
+		if (strcmp(optarg, "-") != 0){
+			nombreArchivo = optarg;
+	    	archivoEntrada = fopen(nombreArchivo, "r");
+			printf("\nArchivo actual: %s\n",nombreArchivo);
+			checkFile(archivoEntrada);
+			cargarArchivoAMemoria(archivoEntrada, text);
+			fclose(archivoEntrada);
+		}else {
+			printf("\nProcesando por STDIN\n");
+			cargarArchivoAMemoria(archivoEntrada, text);
+		}
+		ejecutar = 1;
+		break;
+
+		case 'h':   /* -h, --help */
+		/* Imprime el menu de ayuda  */
+		printManual();
+		exit(0);
+		break;
+
+		case 'V':   /* -V, --version */
+		/*  Prints version information.  */
+		printf(" Version 1.0 del TP1\n");
+		exit(0);
+		break;
+
+		case -1:    /* Se terminaron las opciones */
+		break;
+
+		default:    /* Opcion incorrecta */
+		fprintf(stderr, "Error, opcion incorrecta, el programa se cerrara.\n");
+		printManual(); //Se imprime el manual para que se vean las opciones correctas.
+		exit(1);	// Se cierra el programa y se devuelve 1 por error.
+		}
+	} while (next_option != -1);
+
+	if (argc == (optind + 1)){
+		nombreArchivo = argv[optind];
+		archivoEntrada = fopen(nombreArchivo, "r");
+		//printf("\nArchivo actual: %s\n",nombreArchivo);
+		checkFile(archivoEntrada);
+		cargarArchivoAMemoria(archivoEntrada, text);
+		fclose(archivoEntrada);
+		ejecutar = 1;
+	}
+
+	//Arranca la ejecucion del programa.
+	if (ejecutar){
+		//printf("----ARRANCA----\n");
+		//Se llama a la funcion validate.
+		// *text es un puntero al texto contenido en el archivo.
+		// **errmsg es un puntero a un array de caracteres, a llenar por la funcion validate en caso de error.
+		//Se utiliza la variable flag para ver si hubo error o no en la validacion.
+		//La funcion debe retornar 0 en caso de que la validacion sea correcta, o 1 en caso de que no.
+		flag = validate(text,&errmsg);
+		if (flag>0){
+			fprintf(stderr, "1\n%s\n", errmsg);
+			exit(1);
+		} else {
+			fprintf(stdout, "0\n");
+		}
+
+	} else {
+		fprintf(stderr, "Error, accion invalida, el programa se cerrara.\n");
+		printManual(); //Se imprime el manual para que se vean las opciones correctas.
+		exit(1);	// Se cierra el programa y se devuelve 1 por error.
+	}
+
+    return 0;
+}
+
 \end{lstlisting}
 
-\begin{lstlisting}[language=C, columns=flexible, breaklines=true, frame=single, title=Listing : auxiliares.h]
+\begin{lstlisting}[language=C, columns=flexible, breaklines=true, frame=single, title=Listing : validate.h]
+
+#ifndef VALIDATE_H_
+#define VALIDATE_H_
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+#include <getopt.h>
+
+int validate(char* text, char** errmsg);
+
+#endif /* VALIDATE_H_ */
+
+\end{lstlisting}
+
+\begin{lstlisting}[language=C, columns=flexible, breaklines=true, frame=single, title=Listing : validate.c]
+
+#include "validate.h"
+
+int analizarTag(char* text, char* tagEncontrado, int pos, int *contadorLineas)
+{
+	while(text[pos] != '\0')
+	{
+		if(text[pos] == '\n')
+		{
+			(*contadorLineas)++;
+		}
+		if(text[pos] == '<')
+		{
+			pos++;
+			// Si entra en cerrar un tag
+			if(text[pos] == '/')
+			{
+				pos++;
+				int j = 0;
+				while((text[pos] != '>') && (tagEncontrado[j] == text[pos]))
+				{
+					j++;	pos++;
+				}
+				if((tagEncontrado[j] == '\0') && (text[pos] == '>') )
+				{
+					return pos;
+				} else {
+					return -2;
+				}
+			}  else {
+				int contadorTag = pos;
+				while(text[contadorTag] != '>')
+				{
+					contadorTag++;
+				}
+				contadorTag = contadorTag - pos;
+				int k = 0;
+				char* tagALevantar = malloc(sizeof(char)*contadorTag);
+				while(text[pos] != '>')
+				{
+					tagALevantar[k] = text[pos];
+					k++; pos++;
+				}
+				tagALevantar[k] = '\0';
+				pos++;
+				int posSiguiente;
+				posSiguiente = analizarTag(text, tagALevantar, pos, contadorLineas);
+				free(tagALevantar);
+				switch(posSiguiente)
+				{
+				case -1:
+					return -1;
+					break;
+				case -2:
+					return -2;
+					break;
+
+				default:
+					pos = posSiguiente;
+					break;
+
+				}
+			}
+		}
+		pos++;
+	}
+	return -1;
+}
+
+int validate(char *text, char **errmsg){
+
+	char* buffer;
+	int i = 0;
+	int contadorLineas = 0;
+
+	while(text[i] != '\0')
+	{
+		if(text[i] == '\n')
+		{
+			contadorLineas++;
+		}
+
+		if(text[i] == '<')
+		{
+			i++;
+			int j = 0;
+			char* tagALevantar;
+			while(text[i] != '>')
+			{
+				tagALevantar[j] = text[i];
+				j++; i++;
+			}
+			tagALevantar[j] = '\0';
+			i = analizarTag(text, tagALevantar, i, &contadorLineas);
+			switch(i)
+			{
+			case -1:
+				sprintf(buffer, "Linea: %d. El tag abierto, no fue cerrado.\n", contadorLineas);
+				*errmsg = buffer;
+				return 1;
+				break;
+			case -2:
+				sprintf(buffer, "Linea: %d. Tag mal anidado, el ultimo tag cerrado, no corresponde con el ultimo tag abierto.\n", contadorLineas);
+				*errmsg = buffer;
+				return 1;
+				break;
+
+			default:
+				break;
+
+			}
+		}
+		i++;
+	}
+	return 0;
+}
 
 \end{lstlisting}
 
 \newpage
 \section{Conclusiones}
 
-
+\par De este trabajo practico se pudo aprender como programar con el conjunto de instrucciones Assembly de MIPS32, con lo cual se pudo aprender como trabaja una computadora a bajo nivel.
 
 \newpage
 \section{Referencias}
