@@ -155,22 +155,34 @@ whileDistintoDeCerrarTag:
 	#ACA TENGO QUE SEGUIR(PACHO)
 
 empezar:
+	lw		t1,ATAG_ARG2(sp)			#Cargo la direc de la pos
 	move 	t7, t1
 	lw		t0,ATAG_ARG0(sp)			#Cargo la direc el texto
 contadorTag:
 	addu	t8,t0,t7					#Muevo la direc del texto a la pos
 	lb		t9,0(t8)					#Cargo el texto en la pos
 	bne		t9,MAYOR, aumentarConTag	#Distino de fin de texto
-	subu	t8, t8, t7					#contadorTag = contadorTag - pos;
+	subu	t8, t8, t7					#contadorTag = contadorTag - pos
+	addiu	t8, t8, 1
 	lw		a0,	t8						#cargo el argunmento de la funcion
-	jal		mymalloc					#llamo a la funcion malloc
+	la 		t9, mymalloc				#Cargo en t9 la direccion de la funcion
+	jal		t9							#llamo a la funcion malloc
 	sw		v0, t8						#guardo en t8 la posicino de memoria que reserve
 
 cargarTagALevantar:
+	move 	t4, zero					# int k = 0;
+	lw		t0,ATAG_ARG0(sp)			#Cargo la direc el texto
+	lw		t1,ATAG_ARG2(sp)			#Cargo la direc de la pos
+	addu	t0,t1,t0					#Muevo la direc del texto a la pos
+	lb		t0,0(t0)					#Cargo el texto en la pos(cargo un char)
+	bne		t0,MAYOR, aumentarVar		#Distino de fin de texto
+
+
+actualizarVar:
 	
 
-
 aumentarConTag:
+	lb		t7, 0(t7)					#Cargo el valor de contadorTag
 	addiu	t7, t7, 1 					#contadorTag++
 	b 		contadorTag	
 
