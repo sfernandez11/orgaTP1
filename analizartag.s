@@ -109,32 +109,33 @@ whileDistintoDeEnd:
 	b		errorNoCerrado		#LLegue al fin del texto y no cerre el tag
 
 verSiEsSaltoDeLinea:
-	li		t6,SALTO_DE_LINEA	#Carga el caracter de salto de linea '\n'
-	bne		t0,t6,verSiComienzaTag	#Si no es salto de linea, salta  a analizar si empieza un tag
+	#li		t6,SALTO_DE_LINEA	#Carga el caracter de salto de linea '\n'
+	bne		t0,SALTO_DE_LINEA,verSiComienzaTag	#Si no es salto de linea, salta  a analizar si empieza un tag
 
-	#Si es igual a salto de linea, tengo que sumar uno al contador de linea#
+	#Si es igual a salto de linea, tengo que sumar uno al contador de lineas#
 
 	lw		t3,ATAG_ARG3(sp)	#Guardo la direccion de contadorLineas
 	lw		t6,ATAG_ARG3(sp)	#Guardo la direccion de contadorLineas
 	lw		t3,0(t3)			#Cargo contadorLineas(int)
-	addu	t3,t3,1 		#Le sumo uno a contadorLineas
+	addiu	t3,t3,1 			#Le sumo uno a contadorLineas
 	sw		t3,ATAG_ARG3(sp)	#Guardo en la direc de contadorLineas, contadorLineas + 1
 
 verSiComienzaTag:
-	li		t6,MENOR			#Cargo el '<'
-	beq		t0,t6,comienzaTag	#Si es igual a '<' muevo el texto una pos y sigo comparando 
+	#li		t6,MENOR			#Cargo el '<'
+	beq		t0,MENOR,comienzaTag	#Si es igual a '<'salto a comienzaTag 
 	addu	t1,t1,1 			#Si es distinto, le sumo uno a la pos
 	sw 		t1, ATAG_ARG2(sp)	#Guardo pos++
 	b 		whileDistintoDeEnd	#Vuelvo al principio
 
 comienzaTag:
+	#Antes encontre un '<', tengo que saltearlo sumandole uno a pos
 	addu	t1,t1,1 			#Le sumo uno a pos
 	sw 		t1, ATAG_ARG2(sp)	#Guardo pos++
 	lw		t0,ATAG_ARG0(sp)	#Cargo la direc del texto
 	addu	t0,t1,t0			#Muevo la direc del texto a la pos
 	lb		t0,0(t0)			#Cargo el texto en la pos(cargo un char)
-	li 		t6, BARRA			#Cargo la barra en t6
-	beq		t0, t6, comienzaCerrarTag	#Si t0 es igual a la barra empieza un cerrar tag
+	#li 		t6, BARRA			#Cargo la barra en t6
+	beq		t0, BARRA, comienzaCerrarTag	#Si text[pos] es igual a la barra empieza un cerrar tag
 	# ACA VA EMPEZAR DE SANTI
 
 comienzaCerrarTag:	
@@ -144,15 +145,30 @@ comienzaCerrarTag:
 	lw		t0,ATAG_ARG0(sp)	#Cargo la direc del texto
 	addu	t0,t1,t0			#Muevo la direc del texto a la pos
 	lb		t0,0(t0)			#Cargo el texto en la pos(cargo un char)
-	lw 		t4,zero				# j = 0
+	move 	t4,zero				# j = 0
 
 whileDistintoDeCerrarTag:
-	li 		t6, MAYOR			#En t6 cargo el '>'
+	#li 		t6, MAYOR		#En t6 cargo el '>'
 	lw		t2,ATAG_ARG1		#En t2 cargo la direcc de tagEncontrado
 	addu 	t2,t2,t4			#En t2 guardo la direc de tagEncontrado[j]
 	lw		t2,0(t2)			#Cargo tagEncontrado[j]
-	bne 	t0,t2,errorAnidado	#Si el tagEncontrado[j] es distinto al text[pos] es un error
+	beq 	t0, MAYOR, finCerrarTag		#Si text[pos] == '>' salto a finCerrarTag
+	bne 	t0,t2,finCerrarTag	#Si el tagEncontrado[j] es distinto al text[pos] es un error
+	addu 	t4,t4,1 			#Sumo uno a j
+	addu 	t1,t1,1 			#Sumo uno a pos
+	sw 		t1,ATAG_ARG2($fp)	#Guardo pos++
+	lw		t0,ATAG_ARG0(sp)	#Cargo la direc el texto
+	addu 	t0,t1,t0 			#Cargo la direc de text[pos] en t0
+	lb		t0, 0(t0) 			#Cargo el text[pos] en t0
+	b 		whileDistintoDeCerrarTag	#Salto al comienzo del while
 	#ACA TENGO QUE SEGUIR(PACHO)
+
+finCerrarTag:
+	#Es un if doble
+	#Revisa si el tag se cerro bien(tagEncontrado[j]=='\0' Y text[pos] == '>')
+	bne 	t2, FIN_TEXTO, errorAnidado #Si el tagEncontrado no llego al fin, es un error
+	bne 	t0, MAYOR, errorAnidado 	#Si el text[pos] no llego a '>' es un error
+	b 		devolverPosActual			#Si se cumplio lo anterior tengo que devolver la pos
 
 empezar:
 	move 	t7, t1
@@ -174,6 +190,18 @@ aumentarConTag:
 	addiu	t7, t7, 1 					#contadorTag++
 	b 		contadorTag	
 
+switchPosSiguiente:
+	#Comprara lo que devolvio analizarTag, v0 = analizarTag()
+	li 		t6,-1 					#Cargo -1 en t6
+	beq 	v0,t6, errorNoCerrado	#Si v0 es igual a -1, es un errorNoCerrad
+	li 		t6,-2 					#Cargo -2 en t6
+	beq 	v0, t6, errorAnidado 	#si v0 es igual a -2, es un errorAnidado
+	#Si no devolvio ningun error, a pos le asigno posSiguiente: t2 = v0
+ 	move 	t2,v0 					#En t2 guardo v0 (pos = posSiguiente)
+ 	addiu 	t2,t2,1 				#Le sumo uno a pos
+ 	sw 		t2,ATAG_ARG2 			#Guardo la pos
+ 	b 		whileDistintoDeEnd
+ 	
 devolverPosActual;
 	move 	v0, t1				#Muevo el t1 que tiene la pos a v0
 	b salirATAG					#Recupero los registros
