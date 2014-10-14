@@ -45,10 +45,9 @@ int analizarTag(char* text, char* tagEncontrado, int pos, int *contadorLineas)
 				}
 				tagALevantar[k] = '\0';
 				pos++;
-				int posSiguiente;
-				posSiguiente = analizarTag(text, tagALevantar, pos, contadorLineas);
+				pos = analizarTag(text, tagALevantar, pos, contadorLineas);
 				free(tagALevantar);
-				switch(posSiguiente)
+				switch(pos)
 				{
 				case -1:
 					return -1;
@@ -58,7 +57,6 @@ int analizarTag(char* text, char* tagEncontrado, int pos, int *contadorLineas)
 					break;
 
 				default:
-					pos = posSiguiente;
 					break;
 
 				}
