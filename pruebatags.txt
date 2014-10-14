@@ -1,5 +1,11 @@
 Empieza el archivo
-<tagsssssssssssssssssssssssssssssssss1> texto </tagsssssssssssssssssssssssssssssssss1>
+<> texto </>
 <tag2>  texto2  </tag2>
 <tag4> texto3 </tag4>
-<tag5> <tag3> <otroTag> <cuarto> texto5 </cuarto> </otroTag> </tag3> </tag5>
+<tag5> <tag3> <otroTag> <cuarto> texto5 </cuarto> </otroTag> </tag3> asdad </tag5>
+
+
+
+<tres> asd </tres>
+
+<veinte> </veinte>
