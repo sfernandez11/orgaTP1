@@ -6,6 +6,7 @@
 \usepackage{listings} 
 \usepackage{float}
 \usepackage[justification=centering]{caption}
+\usepackage[T1]{fontenc}
 
 
 \title{		\textbf{Trabajo práctico \#1: conjunto de instrucciones MIPS}}
@@ -29,8 +30,7 @@
 
 
 \begin{abstract}
-Este trabajo práctico trata de una versión en lenguaje C de un programa que lee un archivo de texto que contiene tags posiblemente anidados, y 
-verifica que la estructura sea correcta. Además, el objetivo fue familiarizarse con el conjunto de instrucciones MIPS32 y el concepto de ABI.
+Este trabajo práctico trata de una versión en lenguaje C, de un programa que lee un desde un archivo de texto o desde STDIN, un texto que contiene tags, posiblemente anidados, y verifica que la estructura sea correcta. Además, se hizo un version en Assembly, de una función, para familiarizarse con el conjunto de instrucciones MIPS32 y el concepto de ABI.
 \end{abstract}
 \pagebreak 
 
@@ -39,10 +39,11 @@ verifica que la estructura sea correcta. Además, el objetivo fue familiarizarse 
 
 \section{Introducción}
 
-\pagebreak 
+\par Como objetivo de este trabajo practico se trabajo tanto usando el conjunto de instrucciones de MIPS32 como en el lenguaje C, para programar un programa que recibe desde STDIN o desde un archivo de texto, un texto en el cual se encuentran tags, de la forma \emph{<Tag>... </Tag>}, posiblemente anidados. El programa se encarga de verificar que estén correctamente relacionados, lo que significa que el texto que abre un tag sea igual al texto que lo cierra y que estén correctamente anidados.
+\par También se trabajo usando el Argument Building Area presentado por la cátedra, para guardar los argumentos entre las llamadas de función a función.
 
 \section{Desarrollo}
-
+\par Para desarrollar este trabajo primero se realizo un programa en lenguaje C, el cual 
 
 \subsection{Recursos y Portabilidad}
 
@@ -78,8 +79,40 @@ trabajar mediante SSH de manera más cómoda:
 \\
 
 \subsection{Implementación}
+\par El programa en lenguaje C, cuenta con dos archivos: \emph{main.c} y \emph{validate.c}. \\
+\par En el archivo \emph{main.c} se encuentran tres funciones:\\
+ \par \emph{void cargarArchivoAMemoria(FILE* archivoEntrada, char* text)} \\
+\par Se encarga de pasar el archivo de entrada a memoria. Por \emph{archivoEntrada} se pasa el puntero al archivo y por \emph{text} se obtiene el puntero a la cadena de texto en memoria.\\
 
+\par \emph{void printManual()} \\
+\par Imprime el manual sobre como usar el programa.\\
 
+\par \emph{void checkFile(FILE* file)}\\
+\par Verifica si el archivo del cual se quiere levantar es correcto.
+\\
+\par Luego en el main el programa se encarga de procesar todas las opciones, que se le introducen por argumento, y en el caso de que se pueda levantar el texto correctamente, llama a la función \emph{int validate(char *text, char **errmsg)} la cual se encarga de validar el archivo. Si validate devuelve 0, el programa imprime un 0 y termina su ejecución, pero si validate devuelve un 1, imprime un 1, junto con el mensaje de error en errmsg.\\
+
+\par En el archivo \emph{validate.c} se encuentran dos funciones:\\
+
+\par \emph{int analizarTag(char* text, char* tagEncontrado, int pos, int *contadorLineas)}\\
+
+\par Analiza que el tag que le pasan por argumento sea igual al próximo tag que se cierra. Si encuentra que se abre otro tag antes de encontrar que se cierra un tag, levanta el tag anidado y se llama recursivamente para que lo verifique.
+
+\par \emph{text} es el puntero al texto que se esta analizando.
+\par \emph{tagEncontrado} es el puntero a la cadena de texto que contiene el tag que se levanto anteriormente y que hay que comparar con el siguiente tag que se cierre.
+\par \emph{pos} es la posición a partir de la cual hay que ir analizando el texto. 
+\par \emph{contadorLineas} es el puntero al contador que lleva el numero de linea.
+\\
+\par La función devuelve:
+\par \emph{-1} si es un error donde el ultimo tag abierto no fue cerrado.
+\par	 \emph{-2} si es un error donde el tag cerrado no corresponde con el tag abierto.
+\par Sino devuelve un numero mayor a cero, el cual indica la posición del texto donde quedo después de analizar que se cerro correctamente el tag.\\\\\\
+
+\par \emph{int validate(char *text, char **errmsg)}\\
+\par Va recorriendo el texto hasta que encuentre el fin o hasta que encuentre un tag. Cuando encuentra un tag, lo guarda en el atributo \emph{tagALevantar} y luego llama a la función \emph{analizarTag} para que verifique si se cierra correctamente. Si analizar tag devuelve en un numero mayor a cero, continua analizando el texto desde esa posición, sino verifica que tipo de error es y devuelve por errmsg, el mensaje que se va a imprimir.\\
+\par \emph{text} es el puntero al texto a verificar.
+\par \emph{errmsg} es el puntero a la cadena de texto donde se tiene que guardar el mensaje de error en el caso de que haya alguno error en la estructura de los tags en el texto.\\
+\par La función devuelve un 0 si llego al fin del texto y no se encontró ningún error, con la estructura de los tags, o devuelve un 1 si se encontró algún error.
 
 \subsection{Compilación}
 
@@ -90,9 +123,19 @@ Para compilar el trabajo práctico, se tiene que ejecutar la siguiente línea en l
 Para simplificar este proceso, y no tener que escribir el comando entero, se creó un archivo \emph{compile.sh}, mediante el cual, con solo escribir \emph{./compile.sh}, se compila el trabajo práctico.
 
 \subsection{Corrida de Pruebas}
-\\
+
+\par Hicimos corridas con diferentes textos y los resultados fueron los siguientes.
 
 \begin{lstlisting}
+Texto 1:
+
+<Tag1> texto </Tag1>
+<Tag2>  texto2  </Tag2>
+<Tag3> texto3 </tag>
+
+1
+Linea: 2. Tag mal anidado, el ultimo tag cerrado, no 
+corresponde con el ultimo tag abierto.
 
 \end{lstlisting}
 
@@ -115,7 +158,7 @@ Para simplificar este proceso, y no tener que escribir el comando entero, se cre
 \newpage
 \section{Conclusiones}
 
-\\
+
 
 \newpage
 \section{Referencias}
