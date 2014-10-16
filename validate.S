@@ -50,9 +50,10 @@ ER_TAG_MAL_ANIDADO:
 
 validate:
 	.set	noreorder
-	.cpload	$t9
+	.cpload	t9
 	.set	reorder
 	#Creo el stack frame
+	.frame 	$fp, VALIDATE_SS, ra
 	subu	sp,	sp,	VALIDATE_SS
 	.cprestore 16
 	sw		ra,	VALIDATE_RA(sp)	
@@ -61,8 +62,8 @@ validate:
 	move 	$fp,sp
 	sw		a0, VALIDATE_ARG0($fp)
 	sw		a1, VALIDATE_ARG1($fp)
-	sw      $zero, VALIDATE_I($fp)  	# i = 0
-	sw		$zero, VALIDATE_CL($fp)  	# contadorLineas = 0	
+	sw      zero, VALIDATE_I($fp)  	# i = 0
+	sw		zero, VALIDATE_CL($fp)  	# contadorLineas = 0	
 
 whileFinLinea:
 	sw 		t1, VALIDATE_ARG0($fp) 		# t1 = *text
@@ -89,7 +90,7 @@ ifMenor:
 
 whileNotFinTag:
 	lw		t0, VALIDATE_I($fp) 		#Cargo el valor de i almacenado en el stack
-	addiu 	t6, t1, t0					#Muevo el texto a la nueva pos
+	addu 	t6, t1, t0					#Muevo el texto a la nueva pos
 	lb 		t6, 0(t6)					# text[pos]
 	li		t2, MAYOR					#Cargo en t2 >	
 	bne		t6, t2, tagALevantar 		# text[i] != '>'

@@ -23,9 +23,10 @@
 
 analizarTag:
 	.set	noreorder
-	.cpload	$t9
+	.cpload	t9
 	.set	reorder
 		#Creo el stack frame
+	.frame 	$fp, ATAG_SS, ra
 	subu	sp,	sp,	ATAG_SS
 	.cprestore 16
 	sw		ra,	ATAG_RA(sp)	
@@ -187,11 +188,11 @@ switchPos:
  	sw 		v0, ATAG_ARG2($fp) 			#Guardo la pos
  	b 		whileDistintoDeEnd
  	
-devolverPosActual;
+devolverPosActual:
 	lw 		v0, ATAG_ARG2($fp)			#Muevo el t1 que tiene la pos a v0
 	b 		salirATAG					#Recupero los registros
 
-errorNoCerrado;
+errorNoCerrado:
 	li		v0,-1						# return -1;
 	b 		salirATAG
 
