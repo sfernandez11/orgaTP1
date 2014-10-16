@@ -22,8 +22,12 @@
 	.ent	analizarTag
 
 analizarTag:
+	.set	noreorder
+	.cpload	$t9
+	.set	reorder
 		#Creo el stack frame
 	subu	sp,	sp,	ATAG_SS
+	.cprestore 16
 	sw		ra,	ATAG_RA(sp)	
 	sw		$fp,ATAG_FP(sp)
 	sw		gp, ATAG_GP(sp)
@@ -107,8 +111,8 @@ hayNuevoTag:
 	lw		t0, ATAG_ARG0($fp)			#Cargo la direc el texto
 contadorTag:
 	addu	t8, t0,t7					#Muevo la direc del texto a la pos
-	lb		t9, 0(t8)					#Cargo el texto en la pos
-	bne		t9, MAYOR, aumentarConTag	#Distino de fin de texto
+	lb		t8, 0(t8)					#Cargo el texto en la pos
+	bne		t8, MAYOR, aumentarConTag	#Distino de fin de texto
 	subu	t7, t7, t1					#contadorTag = contadorTag - pos
 	addiu	t7, t7, 1 					#Subo una posicion mas de espacio para el '\0'
 	move	a0,	t7						#cargo el argunmento de la funcion
@@ -197,6 +201,10 @@ errorAnidado:
 
 salirATAG:
 	#Destruye stack frame
+	lw		a0,ATAG_ARG0($fp)
+	lw		a1,ATAG_ARG1($fp)
+	lw 		a2,ATAG_ARG2($fp)
+	lw 		a3,ATAG_ARG3($fp)
 	move 	sp, $fp
 	lw		ra, ATAG_RA(sp)
 	lw		$fp,ATAG_FP(sp)
