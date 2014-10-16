@@ -73,12 +73,9 @@ whileFinLinea:
 	lb 		t6, 0(t6) 					# t6 = text[i]
 
 ############################################################## SYSCALL
-	li      $v0,4
-	la      $a0,msge
-	syscall
 
-	li      $v0,1
-	lw      $a0,t6
+	li      v0,11
+	lw      a0,t6
 	syscall
 
 ############################################################### SYSCALL
@@ -203,9 +200,5 @@ liberarStack:
 	addu	sp,sp,VALIDATE_SS
 	j		ra
 
-
-
-
-msge:   .asciiz "Caracter: "
 
 .end	validate
