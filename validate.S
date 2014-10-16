@@ -1,51 +1,3 @@
-# int validate(char *text, char **errmsg){
-
-# 	char* buffer;
-# 	int i = 0;
-# 	int contadorLineas = 0;
-
-# 	while(text[i] != '\0')
-# 	{
-# 		if(text[i] == '\n')
-# 		{
-# 			contadorLineas++;
-# 		}
-
-# 		if(text[i] == '<')
-# 		{
-# 			i++;
-# 			int j = 0;
-# 			char* tagALevantar;
-# 			while(text[i] != '>')
-# 			{
-# 				tagALevantar[j] = text[i];
-# 				j++; i++;
-# 			}
-#			tagALevantar[j] = '\0';
-# 			i = analizarTag(text, tagALevantar, i, &contadorLineas);
-# 			switch(i)
-# 			{
-# 			case -1:
-# 				sprintf(buffer, "El tag abierto, no fue cerrado, en la linea: %d.\n", contadorLineas);
-# 				*errmsg = buffer;
-# 				return 1;
-# 				break;
-# 			case -2:
-# 				sprintf(buffer, "Tag mal anidado, el ultimo tag cerrado, no corresponde con el ultimo tag abierto, en la linea: %d.\n", contadorLineas);
-# 				*errmsg = buffer;
-# 				return 1;
-# 				break;
-
-# 			default:
-# 				break;
-
-# 			}
-# 		}
-# 		i++;
-# 	}
-# 	return 0;
-# }
-
 #include <mips/regdef.h>
 #include <sys/syscall.h>
 
@@ -139,7 +91,7 @@ whileNotFinTag:
 	addu t8, t4, t5 				#Cargo en a0 la direccion de tagALevantar[j]
 	li t2, FIN_TEXTO 				#Cargo en t2 \0
 	sb t2, 0(t8) 					#tagALevantar[j] = '\0'
-	sw t8, VALIDATE_J($fp)
+	sw t4, VALIDATE_TAGL($fp)
 	b	switchValidate
 
 
@@ -150,6 +102,7 @@ tagALevantar:
 	addu	t6,t1,t0 				# Almaceno la dir de memoria de text[i]
 	lbu	t6,0(t6) 					# t6 = text[i]
 	sb	t6,0(t8) 					# tagALevantar[k] = text[pos];
+	sw 	t4, VALIDATE_TAGL($fp)		
 	lw	t5,VALIDATE_J($fp) 			#Cargo en t5 j
 	addu	t5,t5,1 				#j++
 	sw	t5,VALIDATE_J($fp) 			#Almaceno el valor de j en el stack

@@ -125,9 +125,9 @@ cargarTagALevantar:
 	bne		t0, MAYOR, actualizarVar	#Distino de fin de texto
 	#tagALevantar[k] = '\0'
 	lw 		t8, ATAG_ARG1($fp)			#Cargo el tag
-	addu 	t8, t8, t4					#Me paro en tagALevantar[k]
+	addu 	t6, t8, t4					#Me paro en tagALevantar[k]
 	li 		t7, FIN_TEXTO 				#Cargo en t7 '\0'
-	sb 		t7, 0(t8) 					#tagALevantar[k] = '\0'
+	sb 		t7, 0(t6) 					#tagALevantar[k] = '\0'
 	sw 		t8, ATAG_ARG1($fp)			
 	#Sigo con la funcion	
 	lw		t1, ATAG_ARG2($fp)			#Cargo la direc de la pos
