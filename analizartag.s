@@ -69,6 +69,7 @@ comienzaTag:
 	lb		t0, 0(t0)					#Cargo el texto en la pos(cargo un char)
 	beq		t0, BARRA, comienzaCerrarTag	#Si text[pos] es igual a la barra empieza un cerrar tag
 	# ACA VA EMPEZAR DE SANTI
+	b 		hayNuevoTag					#Si el caracter siguiente al '<' no es una barra '/' hay un tag anidado
 
 comienzaCerrarTag:	
 	#Tengo que saltear la barra, muevo el texto una pos
@@ -100,7 +101,7 @@ finCerrarTag:
 	bne 	t0, MAYOR, errorAnidado 	#Si el text[pos] no llego a '>' es un error
 	b 		devolverPosActual			#Si se cumplio lo anterior tengo que devolver la pos
 
-empezar:
+hayNuevoTag:
 	lw		t1, ATAG_ARG2($fp)			#Cargo la direc de la pos
 	move 	t7, t1
 	lw		t0, ATAG_ARG0($fp)			#Cargo la direc el texto
