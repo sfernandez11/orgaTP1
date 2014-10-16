@@ -47,6 +47,15 @@ whileDistintoDeEnd:
 	lw		t1, ATAG_ARG2($fp)			#Cargo la direc de la pos
 	addu	t0, t1,t0					#Muevo la direc del texto a la pos
 	lb		t0, 0(t0)					#Cargo el texto en la pos(cargo un char)
+
+############################################################### SYSCALL
+
+	li      $v0,11
+	lw      $a0,t0
+	syscall
+
+############################################################### SYSCALL
+
 	bne		t0, FIN_TEXTO,verSiEsSaltoDeLinea 	#Distino de fin de texto
 	b		errorNoCerrado				#LLegue al fin del texto y no cerre el tag
 
@@ -72,6 +81,15 @@ comienzaTag:
 	lw		t0, ATAG_ARG0($fp)			#Cargo la direc del texto
 	addu	t0, t1,t0					#Muevo la direc del texto a la pos
 	lb		t0, 0(t0)					#Cargo el texto en la pos(cargo un char)
+
+############################################################### SYSCALL
+
+	li      $v0,11
+	lw      $a0,t0
+	syscall
+
+############################################################### SYSCALL
+
 	beq		t0, BARRA, comienzaCerrarTag	#Si text[pos] es igual a la barra empieza un cerrar tag
 	# ACA VA EMPEZAR DE SANTI
 	b 		hayNuevoTag					#Si el caracter siguiente al '<' no es una barra '/' hay un tag anidado
@@ -83,6 +101,15 @@ comienzaCerrarTag:
 	lw		t0, ATAG_ARG0($fp)			#Cargo la direc del texto
 	addu	t0, t1,t0					#Muevo la direc del texto a la pos
 	lb		t0, 0(t0)					#Cargo el texto en la pos(cargo un char)
+
+############################################################### SYSCALL
+
+	li      $v0,11
+	lw      $a0,t0
+	syscall
+
+############################################################### SYSCALL
+
 	move 	t4, zero						# j = 0
 
 whileDistintoDeCerrarTag:
@@ -97,6 +124,15 @@ whileDistintoDeCerrarTag:
 	lw		t0, ATAG_ARG0($fp)			#Cargo la direc el texto
 	addu 	t0, t1,t0 					#Cargo la direc de text[pos] en t0
 	lb		t0, 0(t0) 					#Cargo el text[pos] en t0
+
+############################################################### SYSCALL
+
+	li      $v0,11
+	lw      $a0,t0
+	syscall
+
+############################################################### SYSCALL
+
 	b 		whileDistintoDeCerrarTag	#Salto al comienzo del while
 
 finCerrarTag:
@@ -128,6 +164,15 @@ cargarTagALevantar:
 	lw		t1, ATAG_ARG2($fp)			#Cargo la direc de la pos
 	addu	t0, t1,t0					#Muevo la direc del texto a la pos
 	lb		t0, 0(t0)					#Cargo el texto en la pos(cargo un char)
+
+############################################################### SYSCALL
+
+	li      $v0,11
+	lw      $a0,t0
+	syscall
+
+############################################################### SYSCALL
+
 	bne		t0, MAYOR, actualizarVar	#Distino de fin de texto
 	#tagALevantar[k] = '\0'
 	lw 		t8, ATAG_ARG1($fp)			#Cargo el tag
