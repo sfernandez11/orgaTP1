@@ -135,8 +135,23 @@ switchValidate:
 	lw 		a1, VALIDATE_TAGL($fp) 		#Cargo en a1 tagALevantar
 	lw 		a2, VALIDATE_CL($fp) 		#Cargo en a2 contadorLinea
 	lw	 	a3, VALIDATE_I($fp)			#Copio el contenido de t0 en en a3
+
+############################################################## SYSCALL
+
+	li      v0,4
+	lw      a0,msg1
+	syscall
+
+############################################################### SYSCALL
 	la 		t9, analizarTag 			#Cargo la direccion de analizarTag en t9
 	jal 	t9
+	############################################################## SYSCALL
+
+	li      v0,4
+	lw      a0,msg2
+	syscall
+
+############################################################### SYSCALL
 	sw 		v0, VALIDATE_I($fp) 		#Almaceno en el stack lo que me devuelve analizarTag 
 	lw 		t0, VALIDATE_I($fp) 		#Cargo en t0 i
 	#Arranca el switch
@@ -200,5 +215,8 @@ liberarStack:
 	addu	sp,sp,VALIDATE_SS
 	j		ra
 
+
+msg1: .ascii "Entre a analizarTag"
+msg2: .ascii "Sali de analizarTag"
 
 .end	validate
