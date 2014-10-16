@@ -113,6 +113,15 @@ whileFinLinea:
 	sw t0, VALIDATE_I($fp)			# t0 = i
 	addu t6, t0, t1  				# Cargo direc te text[i] en t6
 	lb t6, 0(t6) 					# t6 = text[i]
+	
+	li      $v0,4
+	la      $a0,msge
+	syscall
+
+	lb      $v0,t6
+	lw      $a0,12($fp)
+	syscall
+
 	bne	t6, FIN_TEXTO, ifFinLinea 	# Si text[i] != \0 voy a ifFinLinea
 	b return_0
 
@@ -225,5 +234,10 @@ liberarStack:
 	lw		gp, VALIDATE_GP(sp)
 	addu	sp,sp,VALIDATE_SS
 	j		ra
+
+
+
+
+msge:   .asciiz "Caracter: "
 
 .end	validate
