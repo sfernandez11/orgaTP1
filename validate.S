@@ -216,7 +216,7 @@ liberarStack:
 	j		ra
 
 
-msg1: .ascii "Entre a analizarTag"
-msg2: .ascii "Sali de analizarTag"
+msg1: .ascii.z "Entre a analizarTag"
+msg2: .ascii.z "Sali de analizarTag"
 
 .end	validate
