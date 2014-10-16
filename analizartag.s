@@ -56,7 +56,7 @@ verSiEsSaltoDeLinea:
 
 verSiComienzaTag:
 	beq		t0, MENOR,comienzaTag		#Si es igual a '<'salto a comienzaTag 
-	addu	t1, t1,1 					#Si es distinto, le sumo uno a la pos
+	addiu	t1, t1,1 					#Si es distinto, le sumo uno a la pos
 	sw 		t1, ATAG_ARG2($fp)			#Guardo pos++
 	b 		whileDistintoDeEnd			#Vuelvo al principio
 
@@ -81,7 +81,7 @@ comienzaCerrarTag:
 	move 	t4, zero						# j = 0
 
 whileDistintoDeCerrarTag:
-	lw		t2, ATAG_ARG1				#En t2 cargo la direcc de tagEncontrado
+	lw		t2, ATAG_ARG1($fp)				#En t2 cargo la direcc de tagEncontrado
 	addu 	t2, t2,t4					#En t2 guardo la direc de tagEncontrado[j]
 	lw		t2, 0(t2)					#Cargo tagEncontrado[j]
 	beq 	t0, MAYOR, finCerrarTag		#Si text[pos] == '>' salto a finCerrarTag
@@ -201,6 +201,10 @@ errorAnidado:
 
 salirATAG:
 	#Destruye stack frame
+	lw		a0,ATAG_ARG0($fp)
+	lw		a1,ATAG_ARG1($fp)
+	lw 		a2,ATAG_ARG2($fp)
+	lw 		a3,ATAG_ARG3($fp)
 	move 	sp, $fp
 	lw		ra, ATAG_RA(sp)
 	lw		$fp,ATAG_FP(sp)
