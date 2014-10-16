@@ -20,7 +20,7 @@ int analizarTag(char* text, char* tagEncontrado, int pos, int *contadorLineas)
 				{
 					j++;	pos++;
 				}
-				if((tagEncontrado[j] == '\0') && (text[pos] == '>') )
+				if((tagEncontrado[j] == '\0') && (text[pos] == '>'))
 				{
 					return pos;
 				} else {

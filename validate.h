@@ -8,6 +8,8 @@
 #include <getopt.h>
 #include "mymalloc.h"
 
-int validate(char* text, char** errmsg);
+extern int validate(char* text, char** errmsg);
+extern int analizarTag(char* text, char* tagEncontrado, int pos, int *contadorLineas);
+
 
 #endif /* VALIDATE_H_ */

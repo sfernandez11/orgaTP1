@@ -22,8 +22,13 @@
 	.ent	analizarTag
 
 analizarTag:
+	.set	noreorder
+	.cpload	t9
+	.set	reorder
 		#Creo el stack frame
+	.frame 	$fp, ATAG_SS, ra
 	subu	sp,	sp,	ATAG_SS
+	.cprestore 16
 	sw		ra,	ATAG_RA(sp)	
 	sw		$fp,ATAG_FP(sp)
 	sw		gp, ATAG_GP(sp)
@@ -62,7 +67,7 @@ verSiComienzaTag:
 
 comienzaTag:
 	#Antes encontre un '<', tengo que saltearlo sumandole uno a pos
-	addu	t1, t1,1 					#Le sumo uno a pos
+	addiu	t1, t1,1 					#Le sumo uno a pos
 	sw 		t1, ATAG_ARG2($fp)			#Guardo pos++
 	lw		t0, ATAG_ARG0($fp)			#Cargo la direc del texto
 	addu	t0, t1,t0					#Muevo la direc del texto a la pos
@@ -73,7 +78,7 @@ comienzaTag:
 
 comienzaCerrarTag:	
 	#Tengo que saltear la barra, muevo el texto una pos
-	addu	t1, t1,1 					#Le sumo uno a pos
+	addiu	t1, t1,1 					#Le sumo uno a pos
 	sw 		t1, ATAG_ARG2($fp)			#Guardo pos++
 	lw		t0, ATAG_ARG0($fp)			#Cargo la direc del texto
 	addu	t0, t1,t0					#Muevo la direc del texto a la pos
@@ -81,13 +86,13 @@ comienzaCerrarTag:
 	move 	t4, zero						# j = 0
 
 whileDistintoDeCerrarTag:
-	lw		t2, ATAG_ARG1($fp)				#En t2 cargo la direcc de tagEncontrado
+	lw		t2, ATAG_ARG1($fp)			#En t2 cargo la direcc de tagEncontrado
 	addu 	t2, t2,t4					#En t2 guardo la direc de tagEncontrado[j]
 	lw		t2, 0(t2)					#Cargo tagEncontrado[j]
 	beq 	t0, MAYOR, finCerrarTag		#Si text[pos] == '>' salto a finCerrarTag
 	bne 	t0, t2,finCerrarTag			#Si el tagEncontrado[j] es distinto al text[pos] es un error
-	addu 	t4, t4,1 					#Sumo uno a j
-	addu 	t1, t1,1 					#Sumo uno a pos
+	addiu 	t4, t4,1 					#Sumo uno a j
+	addiu 	t1, t1,1 					#Sumo uno a pos
 	sw 		t1, ATAG_ARG2($fp)			#Guardo pos++
 	lw		t0, ATAG_ARG0($fp)			#Cargo la direc el texto
 	addu 	t0, t1,t0 					#Cargo la direc de text[pos] en t0
@@ -107,11 +112,11 @@ hayNuevoTag:
 	lw		t0, ATAG_ARG0($fp)			#Cargo la direc el texto
 contadorTag:
 	addu	t8, t0,t7					#Muevo la direc del texto a la pos
-	lb		t9, 0(t8)					#Cargo el texto en la pos
-	bne		t9, MAYOR, aumentarConTag	#Distino de fin de texto
-	subu	t8, t8, t7					#contadorTag = contadorTag - pos
-	addiu	t8, t8, 1 					#Subo una posicion mas de espacio para el '\0'
-	move	a0,	t8						#cargo el argunmento de la funcion
+	lb		t8, 0(t8)					#Cargo el texto en la pos
+	bne		t8, MAYOR, aumentarConTag	#Distino de fin de texto
+	subu	t7, t7, t1					#contadorTag = contadorTag - pos
+	addiu	t7, t7, 1 					#Subo una posicion mas de espacio para el '\0'
+	move	a0,	t7						#cargo el argunmento de la funcion
 	la 		t9, mymalloc				#Cargo en t9 la direccion de la funcion
 	jal		t9							#llamo a la funcion malloc
 	sw		v0, ATAG_ARG1($fp)			#guardo en atag1 la posicion de memoria que reserve
@@ -126,14 +131,13 @@ cargarTagALevantar:
 	bne		t0, MAYOR, actualizarVar	#Distino de fin de texto
 	#tagALevantar[k] = '\0'
 	lw 		t8, ATAG_ARG1($fp)			#Cargo el tag
-	addu 	t8, t8, t4					#Me paro en tagALevantar[k]
+	addu 	t6, t8, t4					#Me paro en tagALevantar[k]
 	li 		t7, FIN_TEXTO 				#Cargo en t7 '\0'
-	sb 		t7, 0(t8) 					#tagALevantar[k] = '\0'
+	sb 		t7, 0(t6) 					#tagALevantar[k] = '\0'
 	sw 		t8, ATAG_ARG1($fp)			
 	#Sigo con la funcion	
 	lw		t1, ATAG_ARG2($fp)			#Cargo la direc de la pos
-	lb 		t8, 0(t1)
-	addiu	t1, t8, 1 					#pos++
+	addiu	t1, t1, 1 					#pos++
 	sw 		t1, ATAG_ARG2($fp)			#Guardo la nueva posicion
 	#Cargo los argumentos
 	lw 		a0, ATAG_ARG0($fp)			#a0 = texto
@@ -145,33 +149,31 @@ cargarTagALevantar:
 	sw 		v0, ATAG_ARG2($fp)			#Reemplazo la nuevo posicion
 	#Cargo argumento
 	lw		a0, ATAG_ARG1($fp)			#Cargo en a1 la seccion a liberar
-	la 		t9, free					
+	la 		t9, myfree
+	jal 	t9					
 	b 		switchPos
 
 actualizarVar:
 	lw 		t8, ATAG_ARG1($fp)			#t8 espacio de memoria para tagALevantar
 	#t4 k de tarALevantar, al pricipio k=0, despues no
-	addu 	t8, t8, t4					#tagALevantar[k]
+	addu 	t6, t8, t4					#tagALevantar[k]
 	lw		t0, ATAG_ARG0($fp)			#Cargo la direc el texto
 	lw		t1, ATAG_ARG2($fp)			#Cargo la direc de la pos
 	addu	t0, t1,t0					#Muevo la direc del texto a la pos
 	lbu		t0, 0(t0)					#Cargo el texto en la pos(cargo un char)
-	sb 		t0, 0(t8)					#tagALevantar[k] = texto[pos]
+	sb 		t0, 0(t6)					#tagALevantar[k] = texto[pos]
 	sw 		t8, ATAG_ARG1($fp)			#Guardo el nuevo tagEncontrado
 	#Actualizo variables
 	#k++
-	lb 		t6, 0(t4)
-	addiu 	t4, t6, 1
+	addiu 	t4, t4, 1
 	#pos++
-	lb 		t6, 0(t1)
-	addiu	t1, t6, 1 					
+	addiu	t1, t1, 1 					
 	sw 		t1, ATAG_ARG2($fp)			#Guardo la nueva posicion
 	b		cargarTagALevantar
 
 
 aumentarConTag:
-	lb		t8, 0(t7)					#Cargo el valor de contadorTag
-	addiu	t7, t8, 1 					#contadorTag++
+	addiu	t7, t7, 1 					#contadorTag++
 	b 		contadorTag	
 
 switchPos:
@@ -182,16 +184,15 @@ switchPos:
 	li 		t6, -2 						#Cargo -2 en t6
 	beq 	v0, t6, errorAnidado 		#si v0 es igual a -2, es un errorAnidado
 	#Si no devolvio ningun error
-	lb 		t6, 0(v0)
- 	addiu 	v0, t6, 1 					#Le sumo uno a pos
+ 	addiu 	v0, v0, 1 					#Le sumo uno a pos
  	sw 		v0, ATAG_ARG2($fp) 			#Guardo la pos
  	b 		whileDistintoDeEnd
  	
-devolverPosActual;
-	move 	v0, t1						#Muevo el t1 que tiene la pos a v0
+devolverPosActual:
+	lw 		v0, ATAG_ARG2($fp)			#Muevo el t1 que tiene la pos a v0
 	b 		salirATAG					#Recupero los registros
 
-errorNoCerrado;
+errorNoCerrado:
 	li		v0,-1						# return -1;
 	b 		salirATAG
 

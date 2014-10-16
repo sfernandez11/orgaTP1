@@ -115,13 +115,14 @@ int main(int argc, char* argv[]){
 
 	//Arranca la ejecucion del programa.
 	if (ejecutar){
-		//printf("----ARRANCA----\n");
+
+
 		//Se llama a la funcion validate.
 		// *text es un puntero al texto contenido en el archivo.
 		// **errmsg es un puntero a un array de caracteres, a llenar por la funcion validate en caso de error.
 		//Se utiliza la variable flag para ver si hubo error o no en la validacion.
 		//La funcion debe retornar 0 en caso de que la validacion sea correcta, o 1 en caso de que no.
-		flag = validate(text,&errmsg);
+		flag = validate(text, &errmsg);
 		if (flag>0){
 			fprintf(stderr, "1\n%s\n", errmsg);
 			exit(1);
