@@ -1,0 +1,21 @@
+CC = gcc
+CFLAGS = -c
+PROG = tp1_orga6620
+
+c_wc: wc.c
+	$(CC) $(CFLAGS) wc.c
+
+as_wc: wc.S
+	$(CC) $(CFLAGS) wc.S
+
+tp1_orga: tp1.c
+	$(CC) $(CFLAGS) tp1.c
+
+mips: as_wc tp1_orga
+	$(CC) wc.o tp1.c -o $(PROG)
+
+c: c_wc tp1_orga
+	$(CC) wc.o tp1.c -o $(PROG)
+	
+clean:
+	rm -rf *.o $(PROG)

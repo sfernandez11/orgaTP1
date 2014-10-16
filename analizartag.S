@@ -148,7 +148,7 @@ cargarTagALevantar:
 	sw 		v0, ATAG_ARG2($fp)			#Reemplazo la nuevo posicion
 	#Cargo argumento
 	lw		a0, ATAG_ARG1($fp)			#Cargo en a1 la seccion a liberar
-	la 		t9, free
+	la 		t9, myfree
 	jal 	t9					
 	b 		switchPos
 
