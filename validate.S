@@ -36,12 +36,12 @@
 	.data
 
 ER_TAG_MAL_CERRADO:	
-		.ascii	"Linea: %d. El tag abierto, no fue cerrado.\n\000"
+		.ascii	"Linea: %d. El tag abierto, no fue cerrado.\n\0"
 		.align	2
 
 ER_TAG_MAL_ANIDADO:	
 		.ascii	"Linea: %d. Tag mal anidado, el ultimo tag cerrado, no corresponde"
-		.ascii	"con el ultimo tag abierto.\n\000"
+		.ascii	"con el ultimo tag abierto.\n\0"
 
 	.text
 	.align	2
@@ -62,24 +62,15 @@ validate:
 	move 	$fp,sp
 	sw		a0, VALIDATE_ARG0($fp)
 	sw		a1, VALIDATE_ARG1($fp)
-	sw      zero, VALIDATE_I($fp)  	# i = 0
+	sw      zero, VALIDATE_I($fp)  		# i = 0
 	sw		zero, VALIDATE_CL($fp)  	# contadorLineas = 0	
 
 whileFinLinea:
 
-	sw 		t1, VALIDATE_ARG0($fp) 		# t1 = *text
-	sw 		t0, VALIDATE_I($fp)			# t0 = i
+	lw 		t1, VALIDATE_ARG0($fp) 		# t1 = *text
+	lw 		t0, VALIDATE_I($fp)			# t0 = i
 	addu 	t6, t0, t1  				# Cargo direc te text[i] en t6
 	lb 		t6, 0(t6) 					# t6 = text[i]
-
-############################################################## SYSCALL
-
-	li      v0,11
-	lw      a0,t6
-	syscall
-
-############################################################### SYSCALL
-
 	bne		t6, FIN_TEXTO, ifFinLinea 	# Si text[i] != \0 voy a ifFinLinea
 	b 		return_0
 
@@ -135,23 +126,8 @@ switchValidate:
 	lw 		a1, VALIDATE_TAGL($fp) 		#Cargo en a1 tagALevantar
 	lw 		a2, VALIDATE_CL($fp) 		#Cargo en a2 contadorLinea
 	lw	 	a3, VALIDATE_I($fp)			#Copio el contenido de t0 en en a3
-
-############################################################## SYSCALL
-
-	li      v0,4
-	lw      a0,msg1
-	syscall
-
-############################################################### SYSCALL
 	la 		t9, analizarTag 			#Cargo la direccion de analizarTag en t9
 	jal 	t9
-	############################################################## SYSCALL
-
-	li      v0,4
-	lw      a0,msg2
-	syscall
-
-############################################################### SYSCALL
 	sw 		v0, VALIDATE_I($fp) 		#Almaceno en el stack lo que me devuelve analizarTag 
 	lw 		t0, VALIDATE_I($fp) 		#Cargo en t0 i
 	#Arranca el switch
@@ -214,9 +190,5 @@ liberarStack:
 	lw		gp, VALIDATE_GP(sp)
 	addu	sp,sp,VALIDATE_SS
 	j		ra
-
-
-msg1: .ascii.z "Entre a analizarTag"
-msg2: .ascii.z "Sali de analizarTag"
 
 .end	validate
