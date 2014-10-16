@@ -72,6 +72,7 @@ whileFinLinea:
 	addu 	t6, t0, t1  				# Cargo direc te text[i] en t6
 	lb 		t6, 0(t6) 					# t6 = text[i]
 
+############################################################## SYSCALL
 	li      $v0,4
 	la      $a0,msge
 	syscall
@@ -79,6 +80,8 @@ whileFinLinea:
 	li      $v0,1
 	lw      $a0,t6
 	syscall
+
+############################################################### SYSCALL
 
 	bne		t6, FIN_TEXTO, ifFinLinea 	# Si text[i] != \0 voy a ifFinLinea
 	b 		return_0
