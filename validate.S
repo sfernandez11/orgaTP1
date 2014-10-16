@@ -216,7 +216,9 @@ return_0:
 
 liberarStack:
 	#Destruye stack frame
-	lw v0, VALIDATE_RT($fp) 		#NO SE SI HACE FALTA
+	lw v0, VALIDATE_RT($fp) 		
+	lw a0, VALIDATE_ARG0($fp)
+	lw a1, VALIDATE_ARG1($fp)
 	move 	sp, $fp
 	lw		ra, VALIDATE_RA(sp)
 	lw		$fp,VALIDATE_FP(sp)
