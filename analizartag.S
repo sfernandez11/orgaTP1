@@ -22,13 +22,12 @@
 	.ent	analizarTag
 
 analizarTag:
+	#.frame 	$fp, ATAG_SS, ra
 	.set	noreorder
 	.cpload	t9
 	.set	reorder
-		#Creo el stack frame
-	.frame 	$fp, ATAG_SS, ra
+	#Creo el stack frame
 	subu	sp,	sp,	ATAG_SS
-	.cprestore 16
 	sw		ra,	ATAG_RA(sp)	
 	sw		$fp,ATAG_FP(sp)
 	sw		gp, ATAG_GP(sp)
@@ -45,113 +44,93 @@ analizarTag:
 whileDistintoDeEnd:
 	lw		t0, ATAG_ARG0($fp)			#Cargo la direc el texto
 	lw		t1, ATAG_ARG2($fp)			#Cargo la direc de la pos
-	addu	t0, t1,t0					#Muevo la direc del texto a la pos
+	addu	t0, t0,t1					#Muevo la direc del texto a la pos
 	lb		t0, 0(t0)					#Cargo el texto en la pos(cargo un char)
-
-############################################################### SYSCALL
-
-	li      $v0,11
-	lw      $a0,t0
-	syscall
-
-############################################################### SYSCALL
-
-	bne		t0, FIN_TEXTO,verSiEsSaltoDeLinea 	#Distino de fin de texto
+	li 		t6, FIN_TEXTO
+	bne		t0, t6,verSiEsSaltoDeLinea 	#Distino de fin de texto
 	b		errorNoCerrado				#LLegue al fin del texto y no cerre el tag
 
 verSiEsSaltoDeLinea:
-	bne		t0, SALTO_DE_LINEA,verSiComienzaTag	#Si no es salto de linea, salta  a analizar si empieza un tag
+	li 		t6, SALTO_DE_LINEA
+	bne		t0, t6,verSiComienzaTag	#Si no es salto de linea, salta  a analizar si empieza un tag
 	#Si es igual a salto de linea, tengo que sumar uno al contador de lineas#
 	lw		t3, ATAG_ARG3($fp)			#Guardo la direccion de contadorLineas
-	lb		t6, 0(t3)					#Cargo contadorLineas(int)
-	addiu	t3, t6,1 					#Le sumo uno a contadorLineas
-	sw		t3,	ATAG_ARG3($fp)			#Guardo en la direc de contadorLineas, contadorLineas + 1
+	lw 		t6, ATAG_ARG3($fp)			#Guardo un auxiliar para no perder la referencia
+	lw		t6, 0(t6)					#Cargo contadorLineas(int)
+	addiu	t6, t6,1 					#Le sumo uno a contadorLineas
+	sw		t6,	0(t3)					#Guardo en la direc de contadorLineas, contadorLineas + 1
 	 		
 
 verSiComienzaTag:
-	beq		t0, MENOR,comienzaTag		#Si es igual a '<'salto a comienzaTag 
+	li 		t6, MENOR	
+	beq		t0, t6,comienzaTag			#Si es igual a '<'salto a comienzaTag 
+	lw 		t1, ATAG_ARG2($fp)			#Cargo pos
 	addiu	t1, t1,1 					#Si es distinto, le sumo uno a la pos
 	sw 		t1, ATAG_ARG2($fp)			#Guardo pos++
 	b 		whileDistintoDeEnd			#Vuelvo al principio
 
 comienzaTag:
 	#Antes encontre un '<', tengo que saltearlo sumandole uno a pos
+	lw 		t1, ATAG_ARG2($fp)			#Cargo pos
 	addiu	t1, t1,1 					#Le sumo uno a pos
 	sw 		t1, ATAG_ARG2($fp)			#Guardo pos++
 	lw		t0, ATAG_ARG0($fp)			#Cargo la direc del texto
+	lw		t1, ATAG_ARG2($fp)			#Cargo la pos acutal
 	addu	t0, t1,t0					#Muevo la direc del texto a la pos
 	lb		t0, 0(t0)					#Cargo el texto en la pos(cargo un char)
-
-############################################################### SYSCALL
-
-	li      $v0,11
-	lw      $a0,t0
-	syscall
-
-############################################################### SYSCALL
-
-	beq		t0, BARRA, comienzaCerrarTag	#Si text[pos] es igual a la barra empieza un cerrar tag
+	li 		t6, BARRA
+	beq		t0, t6, comienzaCerrarTag	#Si text[pos] es igual a la barra empieza un cerrar tag
 	# ACA VA EMPEZAR DE SANTI
 	b 		hayNuevoTag					#Si el caracter siguiente al '<' no es una barra '/' hay un tag anidado
 
 comienzaCerrarTag:	
 	#Tengo que saltear la barra, muevo el texto una pos
+	lw 		t1, ATAG_ARG2($fp)			#Cargo pos
 	addiu	t1, t1,1 					#Le sumo uno a pos
 	sw 		t1, ATAG_ARG2($fp)			#Guardo pos++
 	lw		t0, ATAG_ARG0($fp)			#Cargo la direc del texto
+	lw 		t1, ATAG_ARG2($fp)			#Cargo pos
 	addu	t0, t1,t0					#Muevo la direc del texto a la pos
 	lb		t0, 0(t0)					#Cargo el texto en la pos(cargo un char)
 
-############################################################### SYSCALL
 
-	li      $v0,11
-	lw      $a0,t0
-	syscall
-
-############################################################### SYSCALL
-
-	move 	t4, zero						# j = 0
-
+	move 	t4, zero					# j = 0
 whileDistintoDeCerrarTag:
 	lw		t2, ATAG_ARG1($fp)			#En t2 cargo la direcc de tagEncontrado
 	addu 	t2, t2,t4					#En t2 guardo la direc de tagEncontrado[j]
 	lw		t2, 0(t2)					#Cargo tagEncontrado[j]
-	beq 	t0, MAYOR, finCerrarTag		#Si text[pos] == '>' salto a finCerrarTag
+	li 		t6, MAYOR
+	beq 	t0, t6, finCerrarTag		#Si text[pos] == '>' salto a finCerrarTag
 	bne 	t0, t2,finCerrarTag			#Si el tagEncontrado[j] es distinto al text[pos] es un error
 	addiu 	t4, t4,1 					#Sumo uno a j
+	lw 		t1, ATAG_ARG2($fp)			#Cargo pos
 	addiu 	t1, t1,1 					#Sumo uno a pos
 	sw 		t1, ATAG_ARG2($fp)			#Guardo pos++
 	lw		t0, ATAG_ARG0($fp)			#Cargo la direc el texto
+	lw 		t1, ATAG_ARG2($fp)			#Cargo pos
 	addu 	t0, t1,t0 					#Cargo la direc de text[pos] en t0
 	lb		t0, 0(t0) 					#Cargo el text[pos] en t0
-
-############################################################### SYSCALL
-
-	li      $v0,11
-	lw      $a0,t0
-	syscall
-
-############################################################### SYSCALL
-
 	b 		whileDistintoDeCerrarTag	#Salto al comienzo del while
 
 finCerrarTag:
 	#Es un if doble
 	#Revisa si el tag se cerro bien(tagEncontrado[j]=='\0' Y text[pos] == '>')
-	bne 	t2, FIN_TEXTO, errorAnidado #Si el tagEncontrado no llego al fin, es un error
-	bne 	t0, MAYOR, errorAnidado 	#Si el text[pos] no llego a '>' es un error
+	li 		t6, FIN_TEXTO
+	bne 	t2, t6, errorAnidado 		#Si el tagEncontrado no llego al fin, es un error
+	li 		t6, MAYOR
+	bne 	t0, t6, errorAnidado 	#Si el text[pos] no llego a '>' es un error
 	b 		devolverPosActual			#Si se cumplio lo anterior tengo que devolver la pos
 
 hayNuevoTag:
 	lw		t1, ATAG_ARG2($fp)			#Cargo la direc de la pos
-	move 	t7, t1
+	move 	t7, t1						#contadorTag = pos
 	lw		t0, ATAG_ARG0($fp)			#Cargo la direc el texto
 contadorTag:
 	addu	t8, t0,t7					#Muevo la direc del texto a la pos
 	lb		t8, 0(t8)					#Cargo el texto en la pos
-	bne		t8, MAYOR, aumentarConTag	#Distino de fin de texto
+	li 		t6, MAYOR
+	bne		t8, t6, aumentarConTag		#Distino de fin de texto
 	subu	t7, t7, t1					#contadorTag = contadorTag - pos
-	addiu	t7, t7, 1 					#Subo una posicion mas de espacio para el '\0'
 	move	a0,	t7						#cargo el argunmento de la funcion
 	la 		t9, mymalloc				#Cargo en t9 la direccion de la funcion
 	jal		t9							#llamo a la funcion malloc
@@ -164,24 +143,16 @@ cargarTagALevantar:
 	lw		t1, ATAG_ARG2($fp)			#Cargo la direc de la pos
 	addu	t0, t1,t0					#Muevo la direc del texto a la pos
 	lb		t0, 0(t0)					#Cargo el texto en la pos(cargo un char)
-
-############################################################### SYSCALL
-
-	li      $v0,11
-	lw      $a0,t0
-	syscall
-
-############################################################### SYSCALL
-
-	bne		t0, MAYOR, actualizarVar	#Distino de fin de texto
+	li 		t6, MAYOR
+	bne		t0, t6, actualizarVar		#Distino de fin de texto
 	#tagALevantar[k] = '\0'
 	lw 		t8, ATAG_ARG1($fp)			#Cargo el tag
 	addu 	t6, t8, t4					#Me paro en tagALevantar[k]
 	li 		t7, FIN_TEXTO 				#Cargo en t7 '\0'
 	sb 		t7, 0(t6) 					#tagALevantar[k] = '\0'
-	sw 		t8, ATAG_ARG1($fp)			
+	#sw 		t8, ATAG_ARG1($fp)			
 	#Sigo con la funcion	
-	lw		t1, ATAG_ARG2($fp)			#Cargo la direc de la pos
+	lw		t1, ATAG_ARG2($fp)			#Cargo la pos
 	addiu	t1, t1, 1 					#pos++
 	sw 		t1, ATAG_ARG2($fp)			#Guardo la nueva posicion
 	#Cargo los argumentos
@@ -207,11 +178,12 @@ actualizarVar:
 	addu	t0, t1,t0					#Muevo la direc del texto a la pos
 	lbu		t0, 0(t0)					#Cargo el texto en la pos(cargo un char)
 	sb 		t0, 0(t6)					#tagALevantar[k] = texto[pos]
-	sw 		t8, ATAG_ARG1($fp)			#Guardo el nuevo tagEncontrado
+	#sw 		t8, ATAG_ARG1($fp)			#Guardo el nuevo tagEncontrado
 	#Actualizo variables
 	#k++
 	addiu 	t4, t4, 1
 	#pos++
+	lw		t1, ATAG_ARG2($fp)			#Cargo la pos
 	addiu	t1, t1, 1 					
 	sw 		t1, ATAG_ARG2($fp)			#Guardo la nueva posicion
 	b		cargarTagALevantar

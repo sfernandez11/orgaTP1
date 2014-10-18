@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -c
+CFLAGS = -g -c 
 PROG = validate
 
 c_validate: validate.c

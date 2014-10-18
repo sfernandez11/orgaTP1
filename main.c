@@ -7,7 +7,7 @@ void cargarArchivoAMemoria(FILE* archivoEntrada, char* text)
 		(text)[actual] = fgetc(archivoEntrada);
 		actual++;					
 	}	
-	(text)[actual-1] = '\0';
+	(text)[actual - 1] = '\0';
 }
 
 //Funcion que imprime el manual del TP1
@@ -69,7 +69,7 @@ int main(int argc, char* argv[]){
 		/* Indica el archivo de entrada a utilizar (-i - for stdin) */
 		if (strcmp(optarg, "-") != 0){
 			nombreArchivo = optarg;
-	    	archivoEntrada = fopen(nombreArchivo, "r");
+			archivoEntrada = fopen(nombreArchivo, "r");
 			printf("\nArchivo actual: %s\n",nombreArchivo);
 			checkFile(archivoEntrada);
 			cargarArchivoAMemoria(archivoEntrada, text);
@@ -106,7 +106,7 @@ int main(int argc, char* argv[]){
 	if (argc == (optind + 1)){
 		nombreArchivo = argv[optind];
 		archivoEntrada = fopen(nombreArchivo, "r");
-		//printf("\nArchivo actual: %s\n",nombreArchivo);
+		printf("\nArchivo actual: %s\n",nombreArchivo);
 		checkFile(archivoEntrada);
 		cargarArchivoAMemoria(archivoEntrada, text);
 		fclose(archivoEntrada);
@@ -115,7 +115,6 @@ int main(int argc, char* argv[]){
 
 	//Arranca la ejecucion del programa.
 	if (ejecutar){
-
 
 		//Se llama a la funcion validate.
 		// *text es un puntero al texto contenido en el archivo.
@@ -135,6 +134,5 @@ int main(int argc, char* argv[]){
 		printManual(); //Se imprime el manual para que se vean las opciones correctas.
 		exit(1);	// Se cierra el programa y se devuelve 1 por error.
 	}
-
     return 0;
 }

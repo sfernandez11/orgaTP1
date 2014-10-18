@@ -1,0 +1,45 @@
+1) En la carpeta de gxemul, ejecutar:
+	
+		./gxemul -e 3max -d netbsd-pmax.img
+
+2) Dejar cargar y cuando tengan que hacer el login:
+
+		user: root
+		contraseña : orga6620
+
+3) Abrir otra terminal en Ubuntu y ejecutar:
+
+		sudo ifconfig lo:0 172.20.0.1
+
+4) Ir a la terminal de gxemul y poner:
+
+		ssh -R 2222:127.0.0.1:22 usuariodeUbuntu@172.20.0.1
+
+5) Despues para crear el otro lado del tunel, en la terminal de ubuntu:
+
+		ssh -p 2222 root@127.0.0.1
+
+
+A partir de este momento la terminal de ubuntu pasa a ser la de gxemul y la de gxemul para a ser la de ubuntu, como que se cruzan cuando se hace el puente
+
+Finalmente, para pasar archivos de ubuntu a gxemul usar:
+
+	scp -P2222 -r /home/mi_usuario/carpetaTP root@127.0.0.1:/root
+
+	Recuerden que siempre este comando lo tienen que ejecutar desde la terminal de ubuntu, no la de gxemul. La de gxemul solo va a servir para probar el programa
+
+
+En el makefile ya agregue para la parte de debbuger, que habia que agregar que compile con -g
+
+Para usar el debugger, primero corran el programa:
+
+	ej: ./validate pruebatags.txt
+
+	si hay un error y hay un core dump
+
+ejecutar en gxemul:
+
+	gdb validate validate.core
+
+Esto te tendria que decir en que lugar del codigo fallo y hubo segmentation fault.
+Subo todo esto a git.

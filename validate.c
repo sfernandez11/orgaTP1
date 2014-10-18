@@ -34,7 +34,7 @@ int analizarTag(char* text, char* tagEncontrado, int pos, int *contadorLineas)
 				}
 				contadorTag = contadorTag - pos;
 				int k = 0;
-				char* tagALevantar = malloc(sizeof(char)*contadorTag);
+				char* tagALevantar = (char*)malloc(sizeof(char)*contadorTag);
 				while(text[pos] != '>')
 				{
 					tagALevantar[k] = text[pos];
@@ -69,7 +69,6 @@ int validate(char *text, char **errmsg){
 	char* buffer;
 	int i = 0;
 	int contadorLineas = 0;
-
 	while(text[i] != '\0')
 	{
 		if(text[i] == '\n')
