@@ -79,8 +79,14 @@ int validate(char *text, char **errmsg){
 		if(text[i] == '<')
 		{
 			i++;
+			int contadorTag = i;
+			while(text[contadorTag] != '>')
+			{
+				contadorTag++;
+			}
+			contadorTag = contadorTag - i;
+			char* tagALevantar = (char*)malloc(sizeof(char)*contadorTag);
 			int j = 0;
-			char* tagALevantar;
 			while(text[i] != '>')
 			{
 				tagALevantar[j] = text[i];
@@ -88,6 +94,7 @@ int validate(char *text, char **errmsg){
 			}
 			tagALevantar[j] = '\0';
 			i = analizarTag(text, tagALevantar, i, &contadorLineas);
+			free(tagALevantar);
 			switch(i)
 			{
 			case -1:

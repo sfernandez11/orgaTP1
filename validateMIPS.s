@@ -61,16 +61,16 @@ $L21:
 	lw	$v0,72($fp)
 	addu	$v0,$v0,1
 	sw	$v0,72($fp)
-	sw	$zero,24($fp) 		#j = 0
+	sw	$zero,24($fp)
 $L24:
 	lw	$v1,64($fp)
 	lw	$v0,72($fp)
 	addu	$v0,$v1,$v0
 	lb	$v1,0($v0)
-	li	$v0,62				# 0x3e
+	li	$v0,62			# 0x3e
 	beq	$v1,$v0,$L25
-	lw	$v1,68($fp)		 	#Carga tagALevantar
-	lw	$v0,24($fp)			#Carga j
+	lw	$v1,68($fp)
+	lw	$v0,24($fp)
 	addu	$a0,$v1,$v0
 	lw	$v1,64($fp)
 	lw	$v0,72($fp)
@@ -108,10 +108,10 @@ $L28:
 	b	$L17
 $L23:
 	lw	$v0,72($fp)
-	sw	$v0,24($fp) 	#Cargo contadorTag = pos
+	sw	$v0,24($fp)
 $L31:
-	lw	$v1,64($fp)		#Carga texto
-	lw	$v0,24($fp)		#Cargo pos
+	lw	$v1,64($fp)
+	lw	$v0,24($fp)
 	addu	$v0,$v1,$v0
 	lb	$v1,0($v0)
 	li	$v0,62			# 0x3e
@@ -123,10 +123,10 @@ $L33:
 	sw	$v0,24($fp)
 	b	$L31
 $L32:
-	lw	$v1,24($fp) 	#Carga contadorTag
-	lw	$v0,72($fp)		#Carga pos
-	subu	$v0,$v1,$v0 	#contadorTag - pos
-	sw	$v0,24($fp)		#contadortag = contadorTag - pos
+	lw	$v1,24($fp)
+	lw	$v0,72($fp)
+	subu	$v0,$v1,$v0
+	sw	$v0,24($fp)
 	sw	$zero,28($fp)
 	lw	$a0,24($fp)
 	la	$t9,malloc
@@ -141,8 +141,8 @@ $L34:
 	bne	$v1,$v0,$L36
 	b	$L35
 $L36:
-	lw	$v1,32($fp) #Carga el espacio que le dio malloc
-	lw	$v0,28($fp) #Carga el espacio para K
+	lw	$v1,32($fp)
+	lw	$v0,28($fp)
 	addu	$a0,$v1,$v0
 	lw	$v1,64($fp)
 	lw	$v0,72($fp)
@@ -157,8 +157,8 @@ $L36:
 	sw	$v0,72($fp)
 	b	$L34
 $L35:
-	lw	$v1,32($fp) #Carga el espacio que le dio malloc
-	lw	$v0,28($fp) #Carga el espacio para K
+	lw	$v1,32($fp)
+	lw	$v0,28($fp)
 	addu	$v0,$v1,$v0
 	sb	$zero,0($v0)
 	lw	$v0,72($fp)
@@ -208,8 +208,6 @@ $L17:
 	j	$ra
 	.end	analizarTag
 	.size	analizarTag, .-analizarTag
-
-
 	.rdata
 	.align	2
 $LC0:
@@ -266,34 +264,58 @@ $L46:
 	lw	$v0,28($fp)
 	addu	$v0,$v0,1
 	sw	$v0,28($fp)
-	sw	$zero,36($fp)
+	lw	$v0,28($fp)
+	sw	$v0,36($fp)
 $L48:
 	lw	$v1,72($fp)
-	lw	$v0,28($fp)
+	lw	$v0,36($fp)
 	addu	$v0,$v1,$v0
 	lb	$v1,0($v0)
 	li	$v0,62			# 0x3e
 	bne	$v1,$v0,$L50
 	b	$L49
 $L50:
-	lw	$v1,40($fp)
-	lw	$v0,36($fp)
-	addu	$a0,$v1,$v0 #a0 = t8
-	lw	$v1,72($fp)
-	lw	$v0,28($fp)
-	addu	$v0,$v1,$v0 # v0 = t6
-	lbu	$v0,0($v0)
-	sb	$v0,0($a0)
 	lw	$v0,36($fp)
 	addu	$v0,$v0,1
 	sw	$v0,36($fp)
+	b	$L48
+$L49:
+	lw	$v1,36($fp)
+	lw	$v0,28($fp)
+	subu	$v0,$v1,$v0
+	sw	$v0,36($fp)
+	lw	$a0,36($fp)
+	la	$t9,malloc
+	jal	$ra,$t9
+	sw	$v0,40($fp)
+	sw	$zero,44($fp)
+$L51:
+	lw	$v1,72($fp)
+	lw	$v0,28($fp)
+	addu	$v0,$v1,$v0
+	lb	$v1,0($v0)
+	li	$v0,62			# 0x3e
+	bne	$v1,$v0,$L53
+	b	$L52
+$L53:
+	lw	$v1,40($fp)
+	lw	$v0,44($fp)
+	addu	$a0,$v1,$v0
+	lw	$v1,72($fp)
+	lw	$v0,28($fp)
+	addu	$v0,$v1,$v0
+	lbu	$v0,0($v0)
+	sb	$v0,0($a0)
+	lw	$v0,44($fp)
+	addu	$v0,$v0,1
+	sw	$v0,44($fp)
 	lw	$v0,28($fp)
 	addu	$v0,$v0,1
 	sw	$v0,28($fp)
-	b	$L48
-$L49:
+	b	$L51
+$L52:
 	lw	$v1,40($fp)
-	lw	$v0,36($fp)
+	lw	$v0,44($fp)
 	addu	$v0,$v1,$v0
 	sb	$zero,0($v0)
 	addu	$v0,$fp,32
@@ -304,28 +326,31 @@ $L49:
 	la	$t9,analizarTag
 	jal	$ra,$t9
 	sw	$v0,28($fp)
+	lw	$a0,40($fp)
+	la	$t9,free
+	jal	$ra,$t9
 	lw	$v0,28($fp)
-	sw	$v0,48($fp)
+	sw	$v0,52($fp)
 	li	$v0,-2			# 0xfffffffffffffffe
-	lw	$v1,48($fp)
-	beq	$v1,$v0,$L53
+	lw	$v1,52($fp)
+	beq	$v1,$v0,$L56
 	li	$v0,-1			# 0xffffffffffffffff
-	lw	$v1,48($fp)
-	beq	$v1,$v0,$L52
+	lw	$v1,52($fp)
+	beq	$v1,$v0,$L55
 	b	$L47
-$L52:
+$L55:
 	lw	$a0,24($fp)
 	la	$a1,$LC0
 	lw	$a2,32($fp)
 	la	$t9,sprintf
 	jal	$ra,$t9
-	lw	$v1,76($fp)		#Cargas el errmsg en v1
-	lw	$v0,24($fp)		#Cargas el buffer en v0
+	lw	$v1,76($fp)
+	lw	$v0,24($fp)
 	sw	$v0,0($v1)
 	li	$v0,1			# 0x1
-	sw	$v0,44($fp)
+	sw	$v0,48($fp)
 	b	$L42
-$L53:
+$L56:
 	lw	$a0,24($fp)
 	la	$a1,$LC1
 	lw	$a2,32($fp)
@@ -335,7 +360,7 @@ $L53:
 	lw	$v0,24($fp)
 	sw	$v0,0($v1)
 	li	$v1,1			# 0x1
-	sw	$v1,44($fp)
+	sw	$v1,48($fp)
 	b	$L42
 $L47:
 	lw	$v0,28($fp)
@@ -343,9 +368,9 @@ $L47:
 	sw	$v0,28($fp)
 	b	$L43
 $L44:
-	sw	$zero,44($fp)
+	sw	$zero,48($fp)
 $L42:
-	lw	$v0,44($fp)
+	lw	$v0,48($fp)
 	move	$sp,$fp
 	lw	$ra,64($sp)
 	lw	$fp,60($sp)

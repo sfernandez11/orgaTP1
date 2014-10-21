@@ -82,7 +82,7 @@ comienzaTag:
 	#Antes encontre un '<', tengo que saltearlo sumandole uno a pos
 	lw 		t1, 8($fp)			#Cargo pos
 	nop
-	addiu	t1, t1,1 					#Le sumo uno a pos
+	addiu	t1, t1,1 			#Le sumo uno a pos
 	sw 		t1, 8($fp)			#Guardo pos++
 	lw		t0, 0($fp)			#Cargo la direc del texto
 	lw		t1, 8($fp)			#Cargo la pos acutal
@@ -111,13 +111,14 @@ comienzaCerrarTag:
 	#Tengo que saltear la barra, muevo el texto una pos
 	lw 		t1, 8($fp)			#Cargo pos
 	nop
-	addiu	t1, t1,1 					#Le sumo uno a pos
+	addiu	t1, t1,1 			#Le sumo uno a pos
 	sw 		t1, 8($fp)			#Guardo pos++
+	nop
 	lw		t0, 0($fp)			#Cargo la direc del texto
 	lw 		t1, 8($fp)			#Cargo pos
 	nop
-	addu	t0, t1,t0					#Muevo la direc del texto a la pos
-	lbu		t0, 0(t0)					#Cargo el texto en la pos(cargo un char)
+	addu	t0, t1,t0			#Muevo la direc del texto a la pos
+	lbu		t0, 0(t0)			#Cargo el texto en la pos(cargo un char)
 
 ############################################################
 	move	a0, t0			
@@ -139,11 +140,8 @@ whileDistintoDeCerrarTag:
 	addu 	t2, t2,t4					#En t2 guardo la direc de tagEncontrado[j]
 	lbu		t2, 0(t2)					#Cargo tagEncontrado[j]
 
-############################################################
-	lw 		t2, 4($fp)
-	addiu 	t4,t4,1
-	addu 	t2,t2,t4
-	lbu 	t2, 0(t2)
+#######################SYS_CALL#####################################
+
 	move	a0, t2			
 	la 		t9, printAux
 	jal 	t9	
@@ -152,7 +150,8 @@ whileDistintoDeCerrarTag:
 	nop
 	addu 	t2, t2,t4					#En t2 guardo la direc de tagEncontrado[j]
 	lbu		t2, 0(t2)					#Cargo tagEncontrado[j]
-##########################################################
+
+#########################FIN SYS_CALL#################################
 
 	li 		t6, 62
 	beq 	t0, t6, finCerrarTag		#Si text[pos] == '>' salto a finCerrarTag
