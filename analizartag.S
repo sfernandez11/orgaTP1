@@ -44,8 +44,9 @@ analizarTag:
 whileDistintoDeEnd:
 	lw		t0, ATAG_ARG0($fp)			#Cargo la direc el texto
 	lw		t1, ATAG_ARG2($fp)			#Cargo la direc de la pos
+	nop
 	addu	t0, t0,t1					#Muevo la direc del texto a la pos
-	lb		t0, 0(t0)					#Cargo el texto en la pos(cargo un char)
+	lbu		t0, 0(t0)					#Cargo el texto en la pos(cargo un char)
 	li 		t6, FIN_TEXTO
 	bne		t0, t6,verSiEsSaltoDeLinea 	#Distino de fin de texto
 	b		errorNoCerrado				#LLegue al fin del texto y no cerre el tag
@@ -54,30 +55,37 @@ verSiEsSaltoDeLinea:
 	li 		t6, SALTO_DE_LINEA
 	bne		t0, t6,verSiComienzaTag	#Si no es salto de linea, salta  a analizar si empieza un tag
 	#Si es igual a salto de linea, tengo que sumar uno al contador de lineas#
-	lw		t3, ATAG_ARG3($fp)			#Guardo la direccion de contadorLineas
-	lw 		t6, ATAG_ARG3($fp)			#Guardo un auxiliar para no perder la referencia
+	lw		t3, ATAG_ARG3($fp)			#Cargo la direccion de contadorLineas
+	lw 		t6, ATAG_ARG3($fp)			#Cargo un auxiliar para no perder la referencia
+	nop
 	lw		t6, 0(t6)					#Cargo contadorLineas(int)
+	nop
 	addiu	t6, t6,1 					#Le sumo uno a contadorLineas
 	sw		t6,	0(t3)					#Guardo en la direc de contadorLineas, contadorLineas + 1
+	nop
 	 		
 
 verSiComienzaTag:
 	li 		t6, MENOR	
 	beq		t0, t6,comienzaTag			#Si es igual a '<'salto a comienzaTag 
 	lw 		t1, ATAG_ARG2($fp)			#Cargo pos
+	nop
 	addiu	t1, t1,1 					#Si es distinto, le sumo uno a la pos
 	sw 		t1, ATAG_ARG2($fp)			#Guardo pos++
+	nop
 	b 		whileDistintoDeEnd			#Vuelvo al principio
 
 comienzaTag:
 	#Antes encontre un '<', tengo que saltearlo sumandole uno a pos
 	lw 		t1, ATAG_ARG2($fp)			#Cargo pos
+	nop
 	addiu	t1, t1,1 					#Le sumo uno a pos
 	sw 		t1, ATAG_ARG2($fp)			#Guardo pos++
 	lw		t0, ATAG_ARG0($fp)			#Cargo la direc del texto
 	lw		t1, ATAG_ARG2($fp)			#Cargo la pos acutal
+	nop
 	addu	t0, t1,t0					#Muevo la direc del texto a la pos
-	lb		t0, 0(t0)					#Cargo el texto en la pos(cargo un char)
+	lbu		t0, 0(t0)					#Cargo el texto en la pos(cargo un char)
 	li 		t6, BARRA
 	beq		t0, t6, comienzaCerrarTag	#Si text[pos] es igual a la barra empieza un cerrar tag
 	# ACA VA EMPEZAR DE SANTI
@@ -86,17 +94,19 @@ comienzaTag:
 comienzaCerrarTag:	
 	#Tengo que saltear la barra, muevo el texto una pos
 	lw 		t1, ATAG_ARG2($fp)			#Cargo pos
+	nop
 	addiu	t1, t1,1 					#Le sumo uno a pos
 	sw 		t1, ATAG_ARG2($fp)			#Guardo pos++
 	lw		t0, ATAG_ARG0($fp)			#Cargo la direc del texto
 	lw 		t1, ATAG_ARG2($fp)			#Cargo pos
+	nop
 	addu	t0, t1,t0					#Muevo la direc del texto a la pos
-	lb		t0, 0(t0)					#Cargo el texto en la pos(cargo un char)
-
-
+	lbu		t0, 0(t0)					#Cargo el texto en la pos(cargo un char)
 	move 	t4, zero					# j = 0
+
 whileDistintoDeCerrarTag:
 	lw		t2, ATAG_ARG1($fp)			#En t2 cargo la direcc de tagEncontrado
+	nop
 	addu 	t2, t2,t4					#En t2 guardo la direc de tagEncontrado[j]
 	lw		t2, 0(t2)					#Cargo tagEncontrado[j]
 	li 		t6, MAYOR
@@ -104,12 +114,14 @@ whileDistintoDeCerrarTag:
 	bne 	t0, t2,finCerrarTag			#Si el tagEncontrado[j] es distinto al text[pos] es un error
 	addiu 	t4, t4,1 					#Sumo uno a j
 	lw 		t1, ATAG_ARG2($fp)			#Cargo pos
+	nop
 	addiu 	t1, t1,1 					#Sumo uno a pos
 	sw 		t1, ATAG_ARG2($fp)			#Guardo pos++
 	lw		t0, ATAG_ARG0($fp)			#Cargo la direc el texto
 	lw 		t1, ATAG_ARG2($fp)			#Cargo pos
+	nop
 	addu 	t0, t1,t0 					#Cargo la direc de text[pos] en t0
-	lb		t0, 0(t0) 					#Cargo el text[pos] en t0
+	lbu		t0, 0(t0) 					#Cargo el text[pos] en t0
 	b 		whileDistintoDeCerrarTag	#Salto al comienzo del while
 
 finCerrarTag:
@@ -123,11 +135,14 @@ finCerrarTag:
 
 hayNuevoTag:
 	lw		t1, ATAG_ARG2($fp)			#Cargo la direc de la pos
+	nop
 	move 	t7, t1						#contadorTag = pos
 	lw		t0, ATAG_ARG0($fp)			#Cargo la direc el texto
+	nop
+
 contadorTag:
 	addu	t8, t0,t7					#Muevo la direc del texto a la pos
-	lb		t8, 0(t8)					#Cargo el texto en la pos
+	lbu		t8, 0(t8)					#Cargo el texto en la pos
 	li 		t6, MAYOR
 	bne		t8, t6, aumentarConTag		#Distino de fin de texto
 	subu	t7, t7, t1					#contadorTag = contadorTag - pos
@@ -135,24 +150,26 @@ contadorTag:
 	la 		t9, mymalloc				#Cargo en t9 la direccion de la funcion
 	jal		t9							#llamo a la funcion malloc
 	sw		v0, ATAG_ARG1($fp)			#guardo en atag1 la posicion de memoria que reserve
-
 	move 	t4, zero					# int k = 0;
 
 cargarTagALevantar:
 	lw		t0, ATAG_ARG0($fp)			#Cargo la direc el texto
 	lw		t1, ATAG_ARG2($fp)			#Cargo la direc de la pos
+	nop
 	addu	t0, t1,t0					#Muevo la direc del texto a la pos
-	lb		t0, 0(t0)					#Cargo el texto en la pos(cargo un char)
+	lbu		t0, 0(t0)					#Cargo el texto en la pos(cargo un char)
 	li 		t6, MAYOR
 	bne		t0, t6, actualizarVar		#Distino de fin de texto
 	#tagALevantar[k] = '\0'
 	lw 		t8, ATAG_ARG1($fp)			#Cargo el tag
+	nop
 	addu 	t6, t8, t4					#Me paro en tagALevantar[k]
 	li 		t7, FIN_TEXTO 				#Cargo en t7 '\0'
 	sb 		t7, 0(t6) 					#tagALevantar[k] = '\0'
 	#sw 		t8, ATAG_ARG1($fp)			
 	#Sigo con la funcion	
 	lw		t1, ATAG_ARG2($fp)			#Cargo la pos
+	nop
 	addiu	t1, t1, 1 					#pos++
 	sw 		t1, ATAG_ARG2($fp)			#Guardo la nueva posicion
 	#Cargo los argumentos
@@ -171,12 +188,15 @@ cargarTagALevantar:
 
 actualizarVar:
 	lw 		t8, ATAG_ARG1($fp)			#t8 espacio de memoria para tagALevantar
+	nop
 	#t4 k de tarALevantar, al pricipio k=0, despues no
 	addu 	t6, t8, t4					#tagALevantar[k]
 	lw		t0, ATAG_ARG0($fp)			#Cargo la direc el texto
 	lw		t1, ATAG_ARG2($fp)			#Cargo la direc de la pos
+	nop
 	addu	t0, t1,t0					#Muevo la direc del texto a la pos
 	lbu		t0, 0(t0)					#Cargo el texto en la pos(cargo un char)
+	nop
 	sb 		t0, 0(t6)					#tagALevantar[k] = texto[pos]
 	#sw 		t8, ATAG_ARG1($fp)			#Guardo el nuevo tagEncontrado
 	#Actualizo variables
@@ -184,6 +204,7 @@ actualizarVar:
 	addiu 	t4, t4, 1
 	#pos++
 	lw		t1, ATAG_ARG2($fp)			#Cargo la pos
+	nop
 	addiu	t1, t1, 1 					
 	sw 		t1, ATAG_ARG2($fp)			#Guardo la nueva posicion
 	b		cargarTagALevantar
