@@ -72,9 +72,9 @@ whileFinLinea:
 	nop
 	addu 	t6, t0, t1  				# Cargo direc te text[i] en t6
 	lbu 	t6, 0(t6) 					# t6 = text[i]
-	li 		t7, 0
+	li 		t2, 0
 	nop
-	bne		t6, t7, ifFinLinea 			# Si text[i] != \0 voy a ifFinLinea
+	bne		t6, t2, ifFinLinea 			# Si text[i] != \0 voy a ifFinLinea
 	b 		return_0
 
 ifFinLinea:
@@ -93,9 +93,42 @@ ifMenor:
 	nop
 	addiu	t0, t0,1 					# i++
 	sw		t0, 16($fp)
-	sw		zero,24($fp) 				# j = 0
 	nop
 
+
+hayNuevoTag:
+	lw		t0, 16($fp)					#Cargo la pos
+	nop
+	move 	t7, t0						#contadorTag = pos
+	lw		t1, 0($fp)					#Cargo la direc el texto
+	nop
+
+contadorTag:
+	addu	t8, t1,t7					#Muevo la direc del texto a la pos
+	lbu		t8, 0(t8)					#Cargo el texto en la pos
+	nop
+############################################################
+	move	a0, t8			
+	la 		t9, printAux
+	jal 	t9	
+
+	lbu		t8, 0(t8)					#Cargo el texto en la pos
+	nop
+##########################################################
+
+	li 		t2, 62
+	bne		t8, t2, aumentarConTag		#Distino de fin de texto
+	########################
+	lw		t0, 16($fp)					#Cargo la direc de la pos
+	nop
+	########################
+	subu	t7, t7, t0					#contadorTag = contadorTag - pos
+	move	a0,	t7						#cargo el argunmento de la funcion
+	la 		t9, mymalloc				#Cargo en t9 la direccion de la funcion
+	jal		t9							#llamo a la funcion malloc
+	sw		v0, 28($fp)					#guardo en atag1 la posicion de memoria que reserve
+
+	sw		zero,24($fp) 				# j = 0
 whileNotFinTag:
 	lw 		t1, 0($fp) 					# t1 = *text
 	lw		t0, 16($fp) 				#Cargo el valor de i almacenado en el stack
@@ -114,6 +147,9 @@ whileNotFinTag:
 	#sw 		t4, VALIDATE_TAGL($fp)
 	b		switchValidate
 
+aumentarConTag:
+	addiu	t7, t7, 1 					#contadorTag++
+	b 		contadorTag	
 
 tagALevantar:
 	lw 		t1, 0($fp) 					# t1 = *text
@@ -148,6 +184,11 @@ switchValidate:
 	jal 	t9
 	sw 		v0, 16($fp) 				#Almaceno en el stack lo que me devuelve analizarTag 
 	nop
+	#Cargo argumento - FREE
+	lw		a0, 28($fp)					#Cargo en a1 la seccion a liberar
+	la 		t9, myfree
+	jal 	t9	
+	#Sigo con el fin del programa
 	lw 		t0, 16($fp) 				#Cargo en t0 i
 	nop
 	#Arranca el switch
