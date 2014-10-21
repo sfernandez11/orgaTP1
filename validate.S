@@ -142,8 +142,8 @@ tagALevantar:
 switchValidate:
 	lw 		a0, 0($fp) 					#Cargo en a0 *text
 	lw 		a1, 28($fp) 				#Cargo en a1 tagALevantar
-	lw 		a2, 20($fp) 				#Cargo en a2 contadorLinea
-	lw	 	a3, 16($fp)					#Copio el contenido de t0 en en a3
+	lw 		a2, 16($fp) 				#Cargo en a2 la posicion
+	la	 	a3, 20($fp)					#Cargo en a3 el contadorLinea
 	la 		t9, analizarTag 			#Cargo la direccion de analizarTag en t9
 	jal 	t9
 	sw 		v0, 16($fp) 				#Almaceno en el stack lo que me devuelve analizarTag 
