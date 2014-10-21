@@ -112,8 +112,6 @@ contadorTag:
 	la 		t9, printAux
 	jal 	t9	
 
-	lbu		t8, 0(t8)					#Cargo el texto en la pos
-	nop
 ##########################################################
 
 	li 		t2, 62
