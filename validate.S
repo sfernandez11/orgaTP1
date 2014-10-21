@@ -1,27 +1,30 @@
 #include <mips/regdef.h>
 #include <sys/syscall.h>
 
-#define VALIDATE_SS			56
-#define VALIDATE_RA  		48
-#define VALIDATE_FP			44
-#define VALIDATE_GP			40
-#define VALIDATE_ARG0		0
-#define VALIDATE_ARG1  		4
-#define VALIDATE_ARG2       8
-#define VALIDATE_ARG3		12
-#define VALIDATE_I         	16
-#define VALIDATE_CL			20
-#define VALIDATE_J			24
-#define VALIDATE_TAGL		28
-#define VALIDATE_BF			32
-#define VALIDATE_RT			36
 
 
-#define FIN_TEXTO 		0
-#define BARRA 			47
-#define SALTO_DE_LINEA	10
-#define MENOR			60
-#define MAYOR 			62
+.data
+	VALIDATE_SS: .word 56
+ 	VALIDATE_RA: .word 48
+ 	VALIDATE_FP: .word 44
+ 	VALIDATE_GP: .word 40
+ 	VALIDATE_ARG0: .word 0
+ 	VALIDATE_ARG1: .word 4
+ 	VALIDATE_ARG2: .word 8
+ 	VALIDATE_ARG3: .word 12
+ 	VALIDATE_I: .word  16
+ 	VALIDATE_CL: .word 20
+ 	VALIDATE_J: .word  24
+ 	VALIDATE_TAGL: .word 28
+ 	VALIDATE_BF: .word 32
+ 	VALIDATE_RT: .word	36
+
+
+ 	FIN_TEXTO: .word 		0
+ 	BARRA: .word 			47
+ 	SALTO_DE_LINEA: .word	10
+ 	MENOR: .word			60
+	MAYOR: .word 			62
 
 
 #Referencia de registros
@@ -33,7 +36,7 @@
 # t5 = j
 # t6 = text[pos]
 
-	.data
+	
 	.align	2	
 ER_TAG_MAL_CERRADO:	
 		.ascii	"Linea: %d. El tag abierto, no fue cerrado.\n\0"
