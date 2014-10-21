@@ -16,6 +16,29 @@
 #define MENOR			60
 #define MAYOR 			62
 
+
+
+		#.data
+#string1:	.asciiz	"Print this.\n"		# declaration for string variable, 
+						# .asciiz directive makes string null terminated
+
+.data
+	
+	ATAG_SS:		.word 32
+	ATAG_RA:  		.word 24
+	ATAG_FP:		.word 20
+	ATAG_GP:		.word 16
+	ATAG_ARG0:		.word 0
+	ATAG_ARG1:  	.word 4
+	ATAG_ARG2:		.word 8
+	ATAG_ARG3:		.word 12
+
+	FIN_TEXTO: 		.word 0
+	SALTO_DE_LINEA: .word 10
+	BARRA: 			.word 47
+	MENOR: 			.word 60
+	MAYOR: 			.word 62
+
 	.text
 	.align	2
 	.globl	analizarTag
@@ -43,7 +66,7 @@ analizarTag:
 
 whileDistintoDeEnd:
 	lw		t0, ATAG_ARG0($fp)			#Cargo la direc el texto
-	lw		t1, ATAG_ARG2($fp)			#Cargo la direc de la pos
+	lw		t1, ATAG_ARG2($fp)			#Cargo la pos
 	nop
 	addu	t0, t0,t1					#Muevo la direc del texto a la pos
 	lbu		t0, 0(t0)					#Cargo el texto en la pos(cargo un char)
@@ -52,8 +75,8 @@ whileDistintoDeEnd:
 	b		errorNoCerrado				#LLegue al fin del texto y no cerre el tag
 
 verSiEsSaltoDeLinea:
-	li 		t6, SALTO_DE_LINEA
-	bne		t0, t6,verSiComienzaTag	#Si no es salto de linea, salta  a analizar si empieza un tag
+	li 		t6, 10
+	bne		t0, t6,verSiComienzaTag		#Si no es salto de linea, salta  a analizar si empieza un tag
 	#Si es igual a salto de linea, tengo que sumar uno al contador de lineas#
 	lw		t3, ATAG_ARG3($fp)			#Cargo la direccion de contadorLineas
 	lw 		t6, ATAG_ARG3($fp)			#Cargo un auxiliar para no perder la referencia
