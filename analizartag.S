@@ -16,12 +16,6 @@
 #define MENOR			60
 #define MAYOR 			62
 
-
-
-		#.data
-#string1:	.asciiz	"Print this.\n"		# declaration for string variable, 
-						# .asciiz directive makes string null terminated
-
 	.text
 	.align	2
 	.globl	analizarTag
@@ -48,8 +42,8 @@ analizarTag:
 	#auxiliar= t6;		contadorTag= t7
 
 whileDistintoDeEnd:
-	lw		t0, ATAG_ARG0($fp)			#Cargo la direc el texto
-	lw		t1, ATAG_ARG2($fp)			#Cargo la pos
+	lw		t0, 0($fp)			#Cargo la direc el texto
+	lw		t1, 8($fp)			#Cargo la pos
 	nop
 	addu	t0, t0,t1					#Muevo la direc del texto a la pos
 	lbu		t0, 0(t0)					#Cargo el texto en la pos(cargo un char)
@@ -163,6 +157,7 @@ cargarTagALevantar:
 	lw		t1, 8($fp)			#Cargo la direc de la pos
 	nop
 	addu	t0, t1,t0					#Muevo la direc del texto a la pos
+	nop
 	lbu		t0, 0(t0)					#Cargo el texto en la pos(cargo un char)
 	li 		t6, 62
 	bne		t0, t6, actualizarVar		#Distino de fin de texto
