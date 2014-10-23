@@ -2,29 +2,25 @@
 #include <sys/syscall.h>
 
 
+#define VALIDATE_SS			56
+#define VALIDATE_RA  		48
+#define VALIDATE_FP			44
+#define VALIDATE_GP			40
+#define VALIDATE_ARG0		0
+#define VALIDATE_ARG1  		4
+#define VALIDATE_ARG2		8
+#define VALIDATE_ARG3		12
+#define VALIDATE_I 			16
+#define VALIDATE_CL 		20
+#define VALIDATE_J			24
+#define VALIDATE_TAGL		28
+#define VALIDATE_BF			32
+#define	VALIDATE_RT			36
 
-
- #  VALIDATE_SS: .word 56
- # 	VALIDATE_RA: .word 48
- # 	VALIDATE_FP: .word 44
- # 	VALIDATE_GP: .word 40
- # 	VALIDATE_ARG0: .word 0
- # 	VALIDATE_ARG1: .word 4
- # 	VALIDATE_ARG2: .word 8
- # 	VALIDATE_ARG3: .word 12
- # 	VALIDATE_I: .word  16
- # 	VALIDATE_CL: .word 20
- # 	VALIDATE_J: .word  24
- # 	VALIDATE_TAGL: .word 28
- # 	VALIDATE_BF: .word 32
- # 	VALIDATE_RT: .word	36
-
-
- # 	FIN_TEXTO: .word 		0
- # 	BARRA: .word 			47
- # 	SALTO_DE_LINEA: .word	10
- # 	MENOR: .word			60
- # MAYOR: .word 			62
+#define FIN_TEXTO 		0
+#define SALTO_DE_LINEA	10
+#define MENOR			60
+#define MAYOR 			62
 
 
 #Referencia de registros
@@ -40,7 +36,8 @@
 	.align	2	
 ER_TAG_MAL_CERRADO:	
 		.ascii	"Linea: %d. El tag abierto, no fue cerrado.\n\0"
-		.align	2
+
+	.align	2
 ER_TAG_MAL_ANIDADO:	
 		.ascii	"Linea: %d. Tag mal anidado, el ultimo tag cerrado, no corresponde"
 		.ascii	"con el ultimo tag abierto.\n\0"
@@ -51,119 +48,106 @@ ER_TAG_MAL_ANIDADO:
 	.ent	validate
 
 validate:
-	#.frame 	$fp, VALIDATE_SS, ra
 	.set	noreorder
 	.cpload	t9
 	.set	reorder
 	#Creo el stack frame
-	subu	sp,	sp,	56
-	sw		ra,	48(sp)	
-	sw		$fp,44(sp)
-	sw		gp, 40(sp)
+	subu	sp,	sp,	VALIDATE_SS
+	sw		ra,	VALIDATE_RA(sp)	
+	sw		$fp,VALIDATE_FP(sp)
+	sw		gp, VALIDATE_GP(sp)
 	move 	$fp,sp
-	sw		a0, 0($fp)
-	sw		a1, 4($fp)
-	sw      zero, 16($fp)  				# i = 0
-	sw		zero, 20($fp) 			 	# contadorLineas = 0	
+	sw		a0, VALIDATE_ARG0($fp)
+	sw		a1, VALIDATE_ARG1($fp)
+	sw      zero, VALIDATE_I($fp)  		# i = 0
+	sw		zero, VALIDATE_CL($fp) 	 	# contadorLineas = 0
 
 whileFinLinea:
-	lw 		t1, 0($fp) 					# t1 = *text
-	lw 		t0, 16($fp)					# t0 = i
+	lw 		t1, VALIDATE_ARG0($fp) 		# t1 = *text
+	lw 		t0, VALIDATE_I($fp)			# t0 = i
 	addu 	t6, t0, t1  				# Cargo direc te text[i] en t6
-	lb 		t6, 0(t6) 					# t6 = text[i]
-	li 		t2, 0
+	lbu 	t6, 0(t6) 					# t6 = text[i]
+	li 		t2, FIN_TEXTO
 	bne		t6, t2, ifFinLinea 			# Si text[i] != \0 voy a ifFinLinea
 	b 		return_0
 
 ifFinLinea:
 	#
-	lw 		t1, 0($fp) 					# t1 = *text
-	lw 		t0, 16($fp)					# t0 = i
+	lw 		t1, VALIDATE_ARG0($fp) 		# t1 = *text
+	lw 		t0, VALIDATE_I($fp)			# t0 = i
 	addu 	t6, t0, t1  				# Cargo direc te text[i] en t6
-	lb 		t6, 0(t6) 					# t6 = text[i]
+	lbu 	t6, 0(t6) 					# t6 = text[i]
 	#
-	li		t2, 10 						# t2 = \n
+	li		t2, SALTO_DE_LINEA 			# t2 = \n
 	bne		t6,t2, ifMenor 				# (if text[i] != \n)
-	lw		t3,20($fp) 					# t3 -> contador
+	lw		t3,VALIDATE_CL($fp) 		# t3 -> contador
 	addu  	t3, t3, 1 					#contadorLinea++
-	sw		t3,20($fp) 					#Almaceno el contadorLinea modificado en el stack
+	sw		t3,VALIDATE_CL($fp) 		#Almaceno el contadorLinea modificado en el stack
 
 ifMenor:
 	#
-	lw 		t1, 0($fp) 					# t1 = *text
-	lw 		t0, 16($fp)					# t0 = i
+	lw 		t1, VALIDATE_ARG0($fp) 		# t1 = *text
+	lw 		t0, VALIDATE_I($fp)			# t0 = i
 	addu 	t6, t0, t1  				# Cargo direc te text[i] en t6
-	lb 		t6, 0(t6) 					# t6 = text[i]
+	lbu		t6, 0(t6) 					# t6 = text[i]
 	#
-	li		t2, 60						# t2 = <		
+	li		t2, MENOR					# t2 = <		
 	bne		t6, t2, incrementarPos 		#Si no son iguales incremento la posicion
-	lw		t0, 16($fp) 				#Cargo el valor de i almacenado en el stack
+	lw		t0, VALIDATE_I($fp) 		#Cargo el valor de i almacenado en el stack
 	addu	t0, t0,1 					# i++
-	sw		t0, 16($fp)
+	sw		t0, VALIDATE_I($fp)
 
-#################################
-
-#################################
-
-	sw		zero,24($fp) 				# j = 0
+	sw		zero,VALIDATE_J($fp) 		# j = 0
 whileNotFinTag:
-	lw 		t1, 0($fp) 					# t1 = *text
-	lw		t0, 16($fp) 				#Cargo el valor de i almacenado en el stack
+	lw 		t1, VALIDATE_ARG0($fp) 		# t1 = *text
+	lw		t0, VALIDATE_I($fp)			#Cargo el valor de i almacenado en el stack
 	addu 	t6, t1, t0					#Muevo el texto a la nueva i
-	lb 		t6, 0(t6)					# text[i]
-	li		t2, 62						#Cargo en t2 >	
+	lbu 	t6, 0(t6)					# text[i]
+	li		t2, MAYOR					#Cargo en t2 >	
 	bne		t6, t2, tagALevantar 		# text[i] != '>'
-	lw 		t4, 28($fp) 				#Almaceno memoria para tagALevantar
-	lw 		t5, 24($fp) 				#Almacento en t5 j
+	lw 		t4, VALIDATE_TAGL($fp) 		#Almaceno memoria para tagALevantar
+	lw 		t5, VALIDATE_J($fp)			#Almacento en t5 j
 	addu 	t8, t4, t5 					#Cargo en a0 la direccion de tagALevantar[j]
-	li 		t2, 0 						#Cargo en t2 \0
-	sb 		t2, 0(t8) 					#tagALevantar[j] = '\0'
+	li 		t2, FIN_TEXTO 				#Cargo en t2 \0
+	sb		t2, 0(t8) 					#tagALevantar[j] = '\0'
 	b		switchValidate
-
-###############
-#aumentar
-############
 
 tagALevantar:
 	#Para cargar tagALevantar[j]
-	lw		t4, 28($fp) 				#Cargo tag a levantar del stack
-	lw		t5, 24($fp) 				#Cargo en t5 j, j = 0
+	lw		t4, VALIDATE_TAGL($fp) 		#Cargo tag a levantar del stack
+	lw		t5, VALIDATE_J($fp) 		#Cargo en t5 j, j = 0
 	addu	t8, t4,t5 					#Almacento en t8 la direc de de memoria de tagALevantar[j]
 	#Para cargar text[i]
-	lw 		t1, 0($fp) 					# t1 = *text
-	lw		t0, 16($fp) 				#Cargo el valor de i almacenado en el stack
+	lw 		t1, VALIDATE_ARG0($fp) 		# t1 = *text
+	lw		t0, VALIDATE_I($fp) 		#Cargo el valor de i almacenado en el stack
 	addu	t6, t1,t0 					# Almaceno la dir de memoria de text[i]
 	# tagALevantar[j] = text[i];
-	lbu		t6, 0(t6) 					# t6 = text[i]
-	sb		t6, 0(t8) 					# tagALevantar[j] = text[i];
+	lb		t6, 0(t6) 					# t6 = text[i]
+	sb 		t6, 0(t8) 					# tagALevantar[j] = text[i];
 
 	#j++
-	lw		t5, 24($fp) 				#Cargo en t5 j, j = 0	
+	lw		t5, VALIDATE_J($fp) 		#Cargo en t5 j, j = 0	
 	addiu	t5, t5,1 					#j++
-	sw		t5, 24($fp) 				#Almaceno el valor de j en el stack
+	sw		t5, VALIDATE_J($fp) 		#Almaceno el valor de j en el stack
 	#i++
-	lw		t0, 16($fp)					#Cargo en t0 i
+	lw		t0, VALIDATE_I($fp)			#Cargo en t0 i
 	addiu	t0, t0,1 					#i++
-	sw		t0, 16($fp) 				#Almaceno el valor de i en el stack
+	sw		t0, VALIDATE_I($fp) 		#Almaceno el valor de i en el stack
 	b		whileNotFinTag
 
 
 switchValidate:
-	lw 		a0, 0($fp) 					#Cargo en a0 *text
-	lw 		a1, 28($fp) 				#Cargo en a1 tagALevantar
-	lw 		a2, 16($fp) 				#Cargo en a2 la posicion
-	la	 	a3, 20($fp)					#Cargo en a3 el contadorLinea
+	lw 		a0, VALIDATE_ARG0($fp) 		#Cargo en a0 *text
+	lw 		a1, VALIDATE_TAGL($fp) 		#Cargo en a1 tagALevantar
+	lw 		a2, VALIDATE_I($fp) 		#Cargo en a2 la posicion
+	la	 	a3, VALIDATE_CL($fp)		#Cargo en a3 el contadorLinea
 	la 		t9, analizarTag 			#Cargo la direccion de analizarTag en t9
 	jal 	t9
-	sw 		v0, 16($fp) 				#Almaceno en el stack lo que me devuelve analizarTag 
-	#Cargo argumento - FREE
-	#lw		a0, 28($fp)					#Cargo en a1 la seccion a liberar
-	#la 		t9, myfree
-	#jal 	t9	
+	sw 		v0, VALIDATE_I($fp) 		#Almaceno en el stack lo que me devuelve analizarTag 
 
 
 	#Sigo con el fin del programa
-	lw 		t0, 16($fp) 				#Cargo en t0 i
+	lw 		t0, VALIDATE_I($fp) 		#Cargo en t0 i
 	#Arranca el switch
 	li 		t6, -2 						#Cargo en t6 -2
 	beq 	t0, t6, errorAnidado 		# Si i = -2 voy a errorAnidado 
@@ -173,55 +157,51 @@ switchValidate:
 
 
 errorNoCerrado:
-	lw 		a0, 32($fp) 				#Cargo en a0 el buffer
+	lw 		a0, VALIDATE_BF($fp) 		#Cargo en a0 el buffer
 	la 		a1, ER_TAG_MAL_CERRADO 		#Cargo en a1 la direcc de tag mal cerrado
-	lw 		a2, 20($fp) 				#Cargo en a2 contador lineas
+	lw 		a2, VALIDATE_CL($fp) 		#Cargo en a2 contador lineas
 	la 		t9, sprintf 				#Cargo la direccion de sprintf en t9
 	jal 	t9
-	#sw 		a0,	VALIDATE_BF($fp)
 	
-	lw 		t0, 4($fp) 					#Cargo en t0 *errmsg
-	lw 		t1, 32($fp) 				#Cargo en t1 el *buffer
+	lw 		t0, VALIDATE_ARG1($fp) 		#Cargo en t0 *errmsg
+	lw 		t1, VALIDATE_BF($fp) 		#Cargo en t1 el *buffer
 	sw		t1, 0(t0)					#*errmsg = buffer
-	#sw 		t0, VALIDATE_ARG1($fp)
 	li 		v0, 1						#v0 = 1
-	sw		v0, 36($fp) 				#return 1
+	sw		v0, VALIDATE_RT($fp) 		#return 1
 	b 		liberarStack
 
 
 errorAnidado:
-	lw 		a0, 32($fp) 				#Cargo en a0 el buffer
+	lw 		a0, VALIDATE_BF($fp) 		#Cargo en a0 el buffer
 	la 		a1, ER_TAG_MAL_ANIDADO 		#Cargo en a1 la direc de tag mal anidado
-	lw 		a2, 20($fp) 				#Cargo en a2 contador lineas
+	lw 		a2, VALIDATE_CL($fp) 		#Cargo en a2 contador lineas
 	la 		t9, sprintf 				#Cargo la direccion de sprintf en t9
 	jal 	t9
 
-	#sw 		a0,	VALIDATE_BF($fp) 
-	lw 		t0, 4($fp) 					#Cargo en t0 *errmsg
-	lw 		t1, 32($fp) 				#Cargo en t1 el *buffer
+	lw 		t0, VALIDATE_ARG1($fp) 		#Cargo en t0 *errmsg
+	lw 		t1, VALIDATE_BF($fp)		#Cargo en t1 el *buffer
 	sw		t1, 0(t0)					#*errmsg = buffer
-	#sw 		t0, VALIDATE_ARG1($fp)
 	li 		v0, 1						#v0 = 1
-	sw		v0, 36($fp) 				#return 1
+	sw		v0, VALIDATE_RT($fp) 		#return 1
 	b 		liberarStack
 
 incrementarPos:
-	lw 		t0, 16($fp)					#Cargo en t0 el valor de i
+	lw 		t0, VALIDATE_I($fp)			#Cargo en t0 el valor de i
 	addu 	t0, t0, 1 					# i++
-	sw 		t0, 16($fp)					#Lo almaceno en el stack
+	sw 		t0, VALIDATE_I($fp)			#Lo almaceno en el stack
 	b 		whileFinLinea
 
 return_0:
-	sw		zero,36($fp)
+	sw		zero,VALIDATE_RT($fp)
 
 liberarStack:
 	#Destruye stack frame
-	lw 		v0, 36($fp) 
+	lw 		v0, VALIDATE_RT($fp) 
 	move 	sp, $fp
-	lw		ra, 48(sp)
-	lw		$fp,44(sp)
-	lw		gp, 40(sp)
-	addu	sp,sp,56
+	lw		ra, VALIDATE_RA(sp)
+	lw		$fp,VALIDATE_FP(sp)
+	lw		gp, VALIDATE_GP(sp)
+	addu	sp, sp,VALIDATE_SS
 	j		ra
 
 .end	validate

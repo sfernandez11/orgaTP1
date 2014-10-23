@@ -7,7 +7,6 @@
 #include <ctype.h>
 #include <getopt.h>
 #include "mymalloc.h"
-#include "aux.h"
 
 extern int validate(char* text, char** errmsg);
 extern int analizarTag(char* text, char* tagEncontrado, int pos, int *contadorLineas);
