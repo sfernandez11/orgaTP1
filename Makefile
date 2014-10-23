@@ -7,7 +7,7 @@ c_validate: validate.c
 
 as_validate: validate.S
 	$(CC) $(CFLAGS) validate.S
-
+	
 aux: aux.c
 	$(CC) $(CFLAGS) aux.c
 

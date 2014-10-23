@@ -33,8 +33,9 @@ int analizarTag(char* text, char* tagEncontrado, int pos, int *contadorLineas)
 					contadorTag++;
 				}
 				contadorTag = contadorTag - pos;
-				int k = 0;
+				contadorTag = contadorTag + 1; //Para el '\0' final
 				char* tagALevantar = (char*)malloc(sizeof(char)*contadorTag);
+				int k = 0;
 				while(text[pos] != '>')
 				{
 					tagALevantar[k] = text[pos];
@@ -85,6 +86,7 @@ int validate(char *text, char **errmsg){
 				contadorTag++;
 			}
 			contadorTag = contadorTag - i;
+			contadorTag = contadorTag + 1; //Para el '\0' final
 			char* tagALevantar = (char*)malloc(sizeof(char)*contadorTag);
 			int j = 0;
 			while(text[i] != '>')
@@ -98,11 +100,13 @@ int validate(char *text, char **errmsg){
 			switch(i)
 			{
 			case -1:
+				contadorLineas = contadorLineas + 1;
 				sprintf(buffer, "Linea: %d. El tag abierto, no fue cerrado.\n", contadorLineas);
 				*errmsg = buffer;
 				return 1;
 				break;
 			case -2:
+				contadorLineas = contadorLineas + 1;
 				sprintf(buffer, "Linea: %d. Tag mal anidado, el ultimo tag cerrado, no corresponde con el ultimo tag abierto.\n", contadorLineas);
 				*errmsg = buffer;
 				return 1;

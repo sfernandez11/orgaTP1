@@ -66,12 +66,14 @@ $L24:
 	lw	$v1,64($fp)
 	lw	$v0,72($fp)
 	addu	$v0,$v1,$v0
-	lb	$v1,0($v0)
+	lb	$v1,0($v0)	
 	li	$v0,62			# 0x3e
 	beq	$v1,$v0,$L25
+
 	lw	$v1,68($fp)
 	lw	$v0,24($fp)
 	addu	$a0,$v1,$v0
+
 	lw	$v1,64($fp)
 	lw	$v0,72($fp)
 	addu	$v0,$v1,$v0
@@ -83,6 +85,7 @@ $L26:
 	lw	$v0,24($fp)
 	addu	$v0,$v0,1
 	sw	$v0,24($fp)
+
 	lw	$v0,72($fp)
 	addu	$v0,$v0,1
 	sw	$v0,72($fp)
@@ -106,6 +109,8 @@ $L28:
 	li	$v0,-2			# 0xfffffffffffffffe
 	sw	$v0,36($fp)
 	b	$L17
+
+#HAY NUEVO TAG	
 $L23:
 	lw	$v0,72($fp)
 	sw	$v0,24($fp)
@@ -127,7 +132,9 @@ $L32:
 	lw	$v0,72($fp)
 	subu	$v0,$v1,$v0
 	sw	$v0,24($fp)
+
 	sw	$zero,28($fp)
+
 	lw	$a0,24($fp)
 	la	$t9,malloc
 	jal	$ra,$t9
@@ -144,11 +151,14 @@ $L36:
 	lw	$v1,32($fp)
 	lw	$v0,28($fp)
 	addu	$a0,$v1,$v0
+
 	lw	$v1,64($fp)
 	lw	$v0,72($fp)
 	addu	$v0,$v1,$v0
 	lbu	$v0,0($v0)
 	sb	$v0,0($a0)
+
+
 	lw	$v0,28($fp)
 	addu	$v0,$v0,1
 	sw	$v0,28($fp)
@@ -171,6 +181,7 @@ $L35:
 	la	$t9,analizarTag
 	jal	$ra,$t9
 	sw	$v0,72($fp)
+	
 	lw	$a0,32($fp)
 	la	$t9,free
 	jal	$ra,$t9
@@ -306,6 +317,8 @@ $L53:
 	addu	$v0,$v1,$v0
 	lbu	$v0,0($v0)
 	sb	$v0,0($a0)
+
+
 	lw	$v0,44($fp)
 	addu	$v0,$v0,1
 	sw	$v0,44($fp)
@@ -318,17 +331,23 @@ $L52:
 	lw	$v0,44($fp)
 	addu	$v0,$v1,$v0
 	sb	$zero,0($v0)
+
+
 	addu	$v0,$fp,32
 	lw	$a0,72($fp)
 	lw	$a1,40($fp)
 	lw	$a2,28($fp)
 	move	$a3,$v0
 	la	$t9,analizarTag
-	jal	$ra,$t9
+	jal	$ra,$t9	
 	sw	$v0,28($fp)
+
+
 	lw	$a0,40($fp)
 	la	$t9,free
 	jal	$ra,$t9
+
+
 	lw	$v0,28($fp)
 	sw	$v0,52($fp)
 	li	$v0,-2			# 0xfffffffffffffffe
@@ -344,8 +363,11 @@ $L55:
 	lw	$a2,32($fp)
 	la	$t9,sprintf
 	jal	$ra,$t9
+
+
 	lw	$v1,76($fp)
 	lw	$v0,24($fp)
+
 	sw	$v0,0($v1)
 	li	$v0,1			# 0x1
 	sw	$v0,48($fp)
