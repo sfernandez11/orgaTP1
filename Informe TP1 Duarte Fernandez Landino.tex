@@ -30,7 +30,7 @@
 
 
 \begin{abstract}
-Este trabajo práctico trata de una versión en lenguaje C, de un programa que lee un desde un archivo de texto o desde STDIN, un texto que contiene tags, posiblemente anidados, y verifica que la estructura sea correcta. Además, se hizo un version en Assembly, de una función, para familiarizarse con el conjunto de instrucciones MIPS32 y el concepto de ABI.
+Este trabajo práctico trata de una versión en lenguaje C, de un programa que lee desde un archivo de texto o desde STDIN, un texto que contiene tags, posiblemente anidados, y verifica que la estructura sea correcta. Además, se hizo un version en Assembly, de una función, para familiarizarse con el conjunto de instrucciones MIPS32 y el concepto de ABI.
 \end{abstract}
 \pagebreak 
 
@@ -39,8 +39,8 @@ Este trabajo práctico trata de una versión en lenguaje C, de un programa que lee
 
 \section{Introducción}
 
-\par Como objetivo de este trabajo practico se trabajo tanto usando el conjunto de instrucciones de MIPS32 como en el lenguaje C, para programar un programa que recibe desde STDIN o desde un archivo de texto, un texto en el cual se encuentran tags, de la forma \emph{<Tag>... </Tag>}, posiblemente anidados. El programa se encarga de verificar que estén correctamente relacionados, lo que significa que el texto que abre un tag sea igual al texto que lo cierra y que estén correctamente anidados.
-\par También se trabajo usando el ABI presentado por la cátedra, para guardar los argumentos entre las llamadas de función a función.
+\par Como objetivo de este trabajo practico se trabajo tanto usando el conjunto de instrucciones de MIPS32 como en el lenguaje C, para codificar un programa que recibe desde STDIN o desde un archivo de texto, un texto en el cual se encuentran tags, de la forma \emph{<Tag>... </Tag>}, posiblemente anidados. El programa se encarga de verificar que estén correctamente relacionados, lo que significa que el texto que abre un tag sea igual al texto que lo cierra y que estén correctamente anidados.
+\par También se trabajo usando el ABI presentado por la cátedra, para guardar los argumentos en el stack entre las llamadas de función a función.
 
 \section{Desarrollo}
 \par Para desarrollar este trabajo primero se realizo un programa en lenguaje C, el cual contempla las siguientes condiciones.\\
@@ -177,295 +177,53 @@ Resultado:
 
 \end{lstlisting}
 
+\pagebreak
 
-\subsection{Código}
-\subsubsection{Código en C}
+\section{Diagrama de Stack}
+\subsection{Validate}
+\begin{table}[h]
+\begin{tabular}{|l|l|} \hline
+ Stack Size  &56&  \\ \hline
+ Padding  &50&   \\ \hline
+ ra&  48&  \\ \hline
+ fp&  44&  \\ \hline
+ gp&  40&  \\ \hline
+ VALIDATE RT&  36&  \\ \hline
+ VALIDATE BF&  32&  \\ \hline
+ VALIDATE TAGL&  28&  \\ \hline
+ VALIDATE J&  24&  \\ \hline
+ VALIDATE CL&  20&  \\ \hline
+ VALIDATE I&  16&  \\ \hline
+ padding&  12&  \\ \hline
+ padding&  8&  \\ \hline
+ **errmsg&  4&  \\	\hline
+ *text&  0&  \\ \hline
+\end{tabular}
+\end{table} \\
 
-\begin{lstlisting}[language=C, columns=flexible, breaklines=true, frame=single, title=Listing : main.c]
+\newpage
 
-#include "validate.h"
-
-void cargarArchivoAMemoria(FILE* archivoEntrada, char* text) 
-{ 
-	int actual = 0;
-	while(!feof(archivoEntrada)){
-		(text)[actual] = fgetc(archivoEntrada);
-		actual++;					
-	}	
-	(text)[actual-1] = '\0';
-}
-
-//Funcion que imprime el manual del TP1
-void printManual(){
-	printf("Usage:\n validate -h\n");
-	printf(" validate -V\n");
-	printf(" validate [options] file\n");
-	printf("Options:\n");
-	printf(" -h, --help  	Prints usage information.\n");
-	printf(" -V, --version 	Prints version information.\n");
-	printf(" -i, --input 	Path to input file (-i - for stdin)\n");
-	printf("Examples:\n");
-	printf(" validate -i -\n");
-	printf(" validate myfile.tagged\n");
-	printf(" validate -i myfile.tagged\n");
-}
-
-//Funcion para comprobar que los archivos se abrieron bien.
-void checkFile(FILE* file){
-    if (file == NULL){
-    	//Si hay error se escribe por stderr.
-    	fprintf(stderr, "Error, nombre de archivo inexistente, el programa se cerrara.\n");
-        exit(1); // Se cierra el programa y se devuelve 1 por error.
-    }
-}
-
-//Funcion principal del TP1
-int main(int argc, char* argv[]){
-
-	int next_option;
-
-	const char* const short_options = "i:hV";
-
-	const struct option long_options[] = {
-
-		{ "input",     	1, NULL, 'i' },
-		{ "help",    	0, NULL, 'h' },
-		{ "version",    0, NULL, 'V' },
-		{ NULL,         0, NULL, 0   } /* Necesario al final del array.  */
-	};
-
-	//Aca por defecto se establecen algunos parametros.
-	//Luego depende las opciones elegidas se van cambiando.
-	FILE* archivoEntrada = stdin;
-	const char* nombreArchivo;
-	int ejecutar = 0;
-	int flag;
-	char* errmsg;
-	int tamanio = 2048;
-	char text[tamanio];
-
-	//Procesamiento de los parametros de entrada.
-	do {
-		next_option = getopt_long(argc, argv, short_options, long_options, NULL);
-
-		switch (next_option){
-
-		case 'i':   /* -i, --input */
-		/* Indica el archivo de entrada a utilizar (-i - for stdin) */
-		if (strcmp(optarg, "-") != 0){
-			nombreArchivo = optarg;
-	    	archivoEntrada = fopen(nombreArchivo, "r");
-			printf("\nArchivo actual: %s\n",nombreArchivo);
-			checkFile(archivoEntrada);
-			cargarArchivoAMemoria(archivoEntrada, text);
-			fclose(archivoEntrada);
-		}else {
-			printf("\nProcesando por STDIN\n");
-			cargarArchivoAMemoria(archivoEntrada, text);
-		}
-		ejecutar = 1;
-		break;
-
-		case 'h':   /* -h, --help */
-		/* Imprime el menu de ayuda  */
-		printManual();
-		exit(0);
-		break;
-
-		case 'V':   /* -V, --version */
-		/*  Prints version information.  */
-		printf(" Version 1.0 del TP1\n");
-		exit(0);
-		break;
-
-		case -1:    /* Se terminaron las opciones */
-		break;
-
-		default:    /* Opcion incorrecta */
-		fprintf(stderr, "Error, opcion incorrecta, el programa se cerrara.\n");
-		printManual(); //Se imprime el manual para que se vean las opciones correctas.
-		exit(1);	// Se cierra el programa y se devuelve 1 por error.
-		}
-	} while (next_option != -1);
-
-	if (argc == (optind + 1)){
-		nombreArchivo = argv[optind];
-		archivoEntrada = fopen(nombreArchivo, "r");
-		//printf("\nArchivo actual: %s\n",nombreArchivo);
-		checkFile(archivoEntrada);
-		cargarArchivoAMemoria(archivoEntrada, text);
-		fclose(archivoEntrada);
-		ejecutar = 1;
-	}
-
-	//Arranca la ejecucion del programa.
-	if (ejecutar){
-		//printf("----ARRANCA----\n");
-		//Se llama a la funcion validate.
-		// *text es un puntero al texto contenido en el archivo.
-		// **errmsg es un puntero a un array de caracteres, a llenar por la funcion validate en caso de error.
-		//Se utiliza la variable flag para ver si hubo error o no en la validacion.
-		//La funcion debe retornar 0 en caso de que la validacion sea correcta, o 1 en caso de que no.
-		flag = validate(text,&errmsg);
-		if (flag>0){
-			fprintf(stderr, "1\n%s\n", errmsg);
-			exit(1);
-		} else {
-			fprintf(stdout, "0\n");
-		}
-
-	} else {
-		fprintf(stderr, "Error, accion invalida, el programa se cerrara.\n");
-		printManual(); //Se imprime el manual para que se vean las opciones correctas.
-		exit(1);	// Se cierra el programa y se devuelve 1 por error.
-	}
-
-    return 0;
-}
-
-\end{lstlisting}
-
-\begin{lstlisting}[language=C, columns=flexible, breaklines=true, frame=single, title=Listing : validate.h]
-
-#ifndef VALIDATE_H_
-#define VALIDATE_H_
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-#include <getopt.h>
-
-int validate(char* text, char** errmsg);
-
-#endif /* VALIDATE_H_ */
-
-\end{lstlisting}
-
-\begin{lstlisting}[language=C, columns=flexible, breaklines=true, frame=single, title=Listing : validate.c]
-
-#include "validate.h"
-
-int analizarTag(char* text, char* tagEncontrado, int pos, int *contadorLineas)
-{
-	while(text[pos] != '\0')
-	{
-		if(text[pos] == '\n')
-		{
-			(*contadorLineas)++;
-		}
-		if(text[pos] == '<')
-		{
-			pos++;
-			// Si entra en cerrar un tag
-			if(text[pos] == '/')
-			{
-				pos++;
-				int j = 0;
-				while((text[pos] != '>') && (tagEncontrado[j] == text[pos]))
-				{
-					j++;	pos++;
-				}
-				if((tagEncontrado[j] == '\0') && (text[pos] == '>') )
-				{
-					return pos;
-				} else {
-					return -2;
-				}
-			}  else {
-				int contadorTag = pos;
-				while(text[contadorTag] != '>')
-				{
-					contadorTag++;
-				}
-				contadorTag = contadorTag - pos;
-				int k = 0;
-				char* tagALevantar = malloc(sizeof(char)*contadorTag);
-				while(text[pos] != '>')
-				{
-					tagALevantar[k] = text[pos];
-					k++; pos++;
-				}
-				tagALevantar[k] = '\0';
-				pos++;
-				int posSiguiente;
-				posSiguiente = analizarTag(text, tagALevantar, pos, contadorLineas);
-				free(tagALevantar);
-				switch(posSiguiente)
-				{
-				case -1:
-					return -1;
-					break;
-				case -2:
-					return -2;
-					break;
-
-				default:
-					pos = posSiguiente;
-					break;
-
-				}
-			}
-		}
-		pos++;
-	}
-	return -1;
-}
-
-int validate(char *text, char **errmsg){
-
-	char* buffer;
-	int i = 0;
-	int contadorLineas = 0;
-
-	while(text[i] != '\0')
-	{
-		if(text[i] == '\n')
-		{
-			contadorLineas++;
-		}
-
-		if(text[i] == '<')
-		{
-			i++;
-			int j = 0;
-			char* tagALevantar;
-			while(text[i] != '>')
-			{
-				tagALevantar[j] = text[i];
-				j++; i++;
-			}
-			tagALevantar[j] = '\0';
-			i = analizarTag(text, tagALevantar, i, &contadorLineas);
-			switch(i)
-			{
-			case -1:
-				sprintf(buffer, "Linea: %d. El tag abierto, no fue cerrado.\n", contadorLineas);
-				*errmsg = buffer;
-				return 1;
-				break;
-			case -2:
-				sprintf(buffer, "Linea: %d. Tag mal anidado, el ultimo tag cerrado, no corresponde con el ultimo tag abierto.\n", contadorLineas);
-				*errmsg = buffer;
-				return 1;
-				break;
-
-			default:
-				break;
-
-			}
-		}
-		i++;
-	}
-	return 0;
-}
-
-\end{lstlisting}
+\subsection{Analizar Tag}
+\begin{table}[h]
+\begin{tabular}{|l|l|} \hline
+ Stack Size  &40&  \\ \hline
+ Padding  &36&   \\ \hline
+ ra  &32&  \\ \hline
+ fp  &28&  \\ \hline
+ gp  &24&  \\ \hline
+ VAR AUX  &20&  \\ \hline
+ TAGALEVANTAR  &16&  \\ \hline
+ CONTADORLINEAS  &12&  \\ \hline
+ POSICION  &8&  \\ \hline
+ TAGENCONTRADO  &4&  \\ \hline
+ *texto  &0&  \\ \hline
+\end{tabular}
+\end{table}
 
 \newpage
 \section{Conclusiones}
 
-\par De este trabajo practico se pudo aprender como programar con el conjunto de instrucciones Assembly de MIPS32, con lo cual se pudo aprender como trabaja una computadora a bajo nivel.
+\par De este trabajo practico se pudo aprender como programar con el conjunto de instrucciones Assembly de MIPS32, asi como tambien la utilizacion correcta de la ABI de la catedra, entendiendo de esta manera como funciona una computadora a bajo nivel.
 
 \newpage
 \section{Referencias}
