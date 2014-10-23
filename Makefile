@@ -7,9 +7,6 @@ c_validate: validate.c
 
 as_validate: validate.S
 	$(CC) $(CFLAGS) validate.S
-	
-aux: aux.c
-	$(CC) $(CFLAGS) aux.c
 
 mymalloc: mymalloc.S
 	$(CC) $(CFLAGS) mymalloc.S
@@ -20,8 +17,8 @@ as_analizarTag: analizartag.S
 tp1_orga: main.c
 	$(CC) $(CFLAGS) main.c
 
-mips: as_validate as_analizarTag aux mymalloc tp1_orga
-	$(CC) validate.o analizartag.o aux.o mymalloc.o main.c -o $(PROG)
+mips: as_validate as_analizarTag mymalloc tp1_orga
+	$(CC) validate.o analizartag.o mymalloc.o main.c -o $(PROG)
 
 c: c_validate tp1_orga
 	$(CC) validate.o main.c -o $(PROG)
