@@ -158,7 +158,7 @@ contadorTag:
 	addu	t0, t1,t0					#Muevo la direc del texto a la pos
 	lb		t0, 0(t0)					#Cargo el texto en la pos(cargo un char)
 	li 		t6, 62
-	bne		t8, t6, aumentarConTag		#Distino de fin de texto
+	bne		t0, t6, aumentarConTag		#Distino de fin de texto
 
 	lw 		t3, 20($fp)					#Cargo contadortag
 	lw 		t1, 8($fp)					#Cargo pos		
