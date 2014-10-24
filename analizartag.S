@@ -1,18 +1,31 @@
 #include <mips/regdef.h>
 #include <sys/syscall.h>
 
+#Argumentos de la funcion
+#define ATAG_ARG3		52
+#define ATAG_ARG2		48
+#define ATAG_ARG1  		44
+#define ATAG_ARG0		40
+
+#Stack Size
 #define ATAG_SS			40
+
+#SRA
 #define ATAG_RA  		32
 #define ATAG_FP			28
 #define ATAG_GP			24
-#define ATAG_ARG0		0
-#define ATAG_ARG1  		4
-#define ATAG_ARG2		8
-#define ATAG_ARG3		12
 
+#LTA
 #define TAG_A_LEVANTAR 	16
 #define VAR_AUX 		20
 
+#ABA
+#define ABA_3			12
+#define ABA_2			8
+#define ABA_1			4
+#define ABA_0			0
+
+#Constantes
 #define FIN_TEXTO 		0
 #define SALTO_DE_LINEA	10
 #define BARRA 			47
@@ -25,7 +38,6 @@
 	.ent	analizarTag
 
 analizarTag:
-	#.frame 	$fp, ATAG_SS, ra
 	.set	noreorder
 	.cpload	t9
 	.set	reorder

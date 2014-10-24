@@ -1,26 +1,37 @@
 #include <mips/regdef.h>
 #include <sys/syscall.h>
 
+#Argumentos de la funcion
+#define VALIDATE_ARG1  		60
+#define VALIDATE_ARG0		56
 
+#Stack Size
 #define VALIDATE_SS			56
+
+#SRA
 #define VALIDATE_RA  		48
 #define VALIDATE_FP			44
 #define VALIDATE_GP			40
-#define VALIDATE_ARG0		0
-#define VALIDATE_ARG1  		4
-#define VALIDATE_ARG2		8
-#define VALIDATE_ARG3		12
-#define VALIDATE_I 			16
-#define VALIDATE_CL 		20
-#define VALIDATE_J			24
-#define VALIDATE_TAGL		28
-#define VALIDATE_BF			32
-#define	VALIDATE_RT			36
 
-#define FIN_TEXTO 		0
-#define SALTO_DE_LINEA	10
-#define MENOR			60
-#define MAYOR 			62
+#LTA
+#define	VALIDATE_RT			36
+#define VALIDATE_BF			32
+#define VALIDATE_TAGL		28
+#define VALIDATE_J			24
+#define VALIDATE_CL 		20
+#define VALIDATE_I 			16
+
+#ABA
+#define ABA_3				12
+#define ABA_2				8
+#define ABA_1				4
+#define ABA_0				0
+
+#Constantes
+#define FIN_TEXTO 			0
+#define SALTO_DE_LINEA		10
+#define MENOR				60
+#define MAYOR 				62
 
 
 #Referencia de registros
@@ -59,6 +70,8 @@ validate:
 	move 	$fp,sp
 	sw		a0, VALIDATE_ARG0($fp)
 	sw		a1, VALIDATE_ARG1($fp)
+
+	
 	sw      zero, VALIDATE_I($fp)  		# i = 0
 	sw		zero, VALIDATE_CL($fp) 	 	# contadorLineas = 0
 
@@ -72,12 +85,10 @@ whileFinLinea:
 	b 		return_0
 
 ifFinLinea:
-	#
 	lw 		t1, VALIDATE_ARG0($fp) 		# t1 = *text
 	lw 		t0, VALIDATE_I($fp)			# t0 = i
 	addu 	t6, t0, t1  				# Cargo direc te text[i] en t6
 	lbu 	t6, 0(t6) 					# t6 = text[i]
-	#
 	li		t2, SALTO_DE_LINEA 			# t2 = \n
 	bne		t6,t2, ifMenor 				# (if text[i] != \n)
 	lw		t3,VALIDATE_CL($fp) 		# t3 -> contador
@@ -85,17 +96,36 @@ ifFinLinea:
 	sw		t3,VALIDATE_CL($fp) 		#Almaceno el contadorLinea modificado en el stack
 
 ifMenor:
-	#
 	lw 		t1, VALIDATE_ARG0($fp) 		# t1 = *text
 	lw 		t0, VALIDATE_I($fp)			# t0 = i
 	addu 	t6, t0, t1  				# Cargo direc te text[i] en t6
 	lbu		t6, 0(t6) 					# t6 = text[i]
-	#
 	li		t2, MENOR					# t2 = <		
 	bne		t6, t2, incrementarPos 		#Si no son iguales incremento la posicion
 	lw		t0, VALIDATE_I($fp) 		#Cargo el valor de i almacenado en el stack
 	addu	t0, t0,1 					# i++
 	sw		t0, VALIDATE_I($fp)
+
+
+	lw		t0, VALIDATE_I($fp)			#Cargo la i
+	sw		t0, VALIDATE_TAGL($fp)		#contadorTag = i
+contadorTag:
+	lw 		t1, VALIDATE_ARG0($fp)		# t1 = *text
+	lw 		t0, VALIDATE_TAGL($fp)		# t0 = contadorTag
+	addu 	t6, t0, t1  				# Cargo direc te text[i] en t6
+	lb 		t6, 0(t6) 					# t6 = text[i]
+	li 		t2, MAYOR
+	bne		t6, t2, aumentarConTag		#Distino de fin de texto
+	lw		t2, VALIDATE_TAGL($fp) 		#t2 = contadorTag
+	lw		t0, VALIDATE_I($fp)			#t0 = i
+	subu	t7, t2, t0					#contadorTag = contadorTag - i
+	addu 	t7, t7, 1 					#contadorTag = contadorTag + 1 para el '\0'
+	sw		t7, VALIDATE_TAGL($fp)
+	lw 		a0, VALIDATE_TAGL($fp)		#Cargo el argunmento de la funcion
+	la 		t9, mymalloc				#Cargo en t9 la direccion de la funcion
+	jal		t9							#llamo a la funcion malloc
+	sw		v0, VALIDATE_TAGL($fp)		#guardo la posicion de memoria que reserve
+
 
 	sw		zero,VALIDATE_J($fp) 		# j = 0
 whileNotFinTag:
@@ -111,6 +141,12 @@ whileNotFinTag:
 	li 		t2, FIN_TEXTO 				#Cargo en t2 \0
 	sb		t2, 0(t8) 					#tagALevantar[j] = '\0'
 	b		switchValidate
+
+	aumentarConTag:
+	lw		t0,VALIDATE_TAGL($fp)
+	addu	t0,t0,1 					#contadorTag++
+	sw		t0,VALIDATE_TAGL($fp)				
+	b 		contadorTag		
 
 tagALevantar:
 	#Para cargar tagALevantar[j]
@@ -144,7 +180,10 @@ switchValidate:
 	la 		t9, analizarTag 			#Cargo la direccion de analizarTag en t9
 	jal 	t9
 	sw 		v0, VALIDATE_I($fp) 		#Almaceno en el stack lo que me devuelve analizarTag 
-
+	#Cargo argumento - FREE
+	lw		a0, VALIDATE_TAGL($fp)		#Cargo en a1 la seccion a liberar
+	la 		t9, myfree
+	jal 	t9	
 
 	#Sigo con el fin del programa
 	lw 		t0, VALIDATE_I($fp) 		#Cargo en t0 i
