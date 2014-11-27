@@ -70,12 +70,10 @@ int main(int argc, char* argv[]){
 		if (strcmp(optarg, "-") != 0){
 			nombreArchivo = optarg;
 			archivoEntrada = fopen(nombreArchivo, "r");
-			printf("\nArchivo actual: %s\n",nombreArchivo);
 			checkFile(archivoEntrada);
 			cargarArchivoAMemoria(archivoEntrada, text);
 			fclose(archivoEntrada);
 		}else {
-			printf("\nProcesando por STDIN\n");
 			cargarArchivoAMemoria(archivoEntrada, text);
 		}
 		ejecutar = 1;
@@ -106,7 +104,6 @@ int main(int argc, char* argv[]){
 	if (argc == (optind + 1)){
 		nombreArchivo = argv[optind];
 		archivoEntrada = fopen(nombreArchivo, "r");
-		printf("\nArchivo actual: %s\n",nombreArchivo);
 		checkFile(archivoEntrada);
 		cargarArchivoAMemoria(archivoEntrada, text);
 		fclose(archivoEntrada);
@@ -123,16 +120,14 @@ int main(int argc, char* argv[]){
 		//La funcion debe retornar 0 en caso de que la validacion sea correcta, o 1 en caso de que no.
 		flag = validate(text, &errmsg);
 		if (flag>0){
-			fprintf(stderr, "1\n%s\n", errmsg);
-			exit(1);
-		} else {
-			fprintf(stdout, "0\n");
+			fprintf(stderr, "\n%s\n", errmsg);
+			return 1;
 		}
 
 	} else {
 		fprintf(stderr, "Error, accion invalida, el programa se cerrara.\n");
 		printManual(); //Se imprime el manual para que se vean las opciones correctas.
-		exit(1);	// Se cierra el programa y se devuelve 1 por error.
+		return 1;	// Se cierra el programa y se devuelve 1 por error.
 	}
     return 0;
 }

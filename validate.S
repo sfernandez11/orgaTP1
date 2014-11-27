@@ -59,11 +59,13 @@ ER_TAG_MAL_ANIDADO:
 	.ent	validate
 
 validate:
+	.frame $fp, VALIDATE_SS, ra
 	.set	noreorder
 	.cpload	t9
 	.set	reorder
 	#Creo el stack frame
 	subu	sp,	sp,	VALIDATE_SS
+	.cprestore VALIDATE_GP
 	sw		ra,	VALIDATE_RA(sp)	
 	sw		$fp,VALIDATE_FP(sp)
 	sw		gp, VALIDATE_GP(sp)

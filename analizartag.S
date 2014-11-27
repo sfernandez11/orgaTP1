@@ -38,11 +38,13 @@
 	.ent	analizarTag
 
 analizarTag:
+	.frame $fp, ATAG_SS, ra
 	.set	noreorder
 	.cpload	t9
 	.set	reorder
 	#Creo el stack frame
 	subu	sp,	sp,	ATAG_SS
+	.cprestore ATAG_GP
 	sw		ra,	ATAG_RA(sp)	
 	sw		$fp,ATAG_FP(sp)
 	sw		gp, ATAG_GP(sp)
